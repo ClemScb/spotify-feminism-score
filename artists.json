@@ -158,6 +158,61 @@
         "https://www.rtbf.be/article/le-rappeur-freeze-corleone-lache-par-son-label-a-cause-de-ses-clips-juges-antisemites-10587582",
         "https://fr.wikipedia.org/wiki/Freeze_Corleone"
       ]
+    },
+    {
+      "name": "Sidiki Diabaté",
+      "aliases": [
+        "Sidiki Diabate"
+      ],
+      "status": "charged",
+      "gravity": 4,
+      "categories": [
+        "violences conjugales",
+        "sequestration"
+      ],
+      "public_since": "2020-09",
+      "summary": "Arrete le 21 septembre 2020 a Bamako apres la plainte de son ex-compagne Mariam Sow, qui a publie des photos de son corps tumefie et affirme avoir ete frappee a coups de ceinture, de cravache et de rallonge electrique puis sequestree pres de deux mois. Place sous mandat de depot, puis libere provisoirement en janvier 2021. Universal Music Africa a suspendu toute collaboration. Il evoque un coup monte. Issue du jugement non etablie a ce jour : affaire non tranchee.",
+      "sources": [
+        "https://www.franceinfo.fr/monde/afrique/mali/mali-sidiki-diabate-grand-joueur-de-kora-incarcere-pour-violences-conjugales_4121391.html",
+        "https://www.koaci.com/article/2020/09/25/mali/politique/mali-accuse-de-violences-conjugales-lartiste-sidiki-diabate-en-prison_145311.html"
+      ]
+    },
+    {
+      "name": "Young Thug",
+      "aliases": [
+        "Jeffery Williams"
+      ],
+      "status": "convicted",
+      "gravity": 3,
+      "categories": [
+        "association de malfaiteurs (RICO)",
+        "armes",
+        "stupefiants"
+      ],
+      "public_since": "2022-05",
+      "summary": "Arrete en mai 2022 dans l'affaire RICO visant le collectif YSL, le plus long proces de l'histoire de Georgie. Le 31 octobre 2024, il a plaide coupable des chefs d'armes et de stupefiants et nolo contendere pour le racket et la direction d'un gang. Condamne a 40 ans dont 5 commues en detention deja effectuee, assortis de 15 ans de mise a l'epreuve. Faits de criminalite organisee, non genres.",
+      "sources": [
+        "https://stereogum.com/2286142/young-thug-is-free-after-plea-deal-in-ysl-case/news",
+        "https://www.vibe.com/news/national/young-thug-guilty-plea-rico-trial-1234937838"
+      ]
+    },
+    {
+      "name": "A$AP Rocky",
+      "aliases": [
+        "ASAP Rocky",
+        "Rakim Mayers"
+      ],
+      "status": "acquitted",
+      "gravity": 0,
+      "categories": [
+        "acquitte (violences avec arme a feu)"
+      ],
+      "public_since": "2022-04",
+      "summary": "Poursuivi pour deux chefs de voies de fait avec arme semi-automatique, pour une altercation du 6 novembre 2021 a Hollywood avec Terell Ephron. Le 18 fevrier 2025, apres trois semaines de proces et trois heures de deliberation, un jury de Los Angeles l'a declare NON COUPABLE des deux chefs ; il encourait 24 ans. Un jury ayant tranche en sa faveur, cette entree est neutre.",
+      "sources": [
+        "https://www.aljazeera.com/program/newsfeed/2025/2/19/rapper-aap-rocky-found-not-guilty-in-gun-assault-case",
+        "https://www.kmxt.org/2025-02-18/rapper-a-ap-rocky-found-not-guilty-of-felony-assault-with-a-firearm"
+      ]
     }
   ]
 }

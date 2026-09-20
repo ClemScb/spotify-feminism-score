@@ -109,9 +109,25 @@
 
   h2{font-family:var(--display);font-weight:800;font-size:1.35rem;letter-spacing:-.025em;
      margin:4rem 0 1rem;padding-bottom:.6rem;border-bottom:2px solid var(--ink)}
+  details.entry{border-bottom:1px solid var(--rule)}
+  details.entry:nth-child(odd){background:linear-gradient(to right,rgba(200,48,95,.045),transparent 70%)}
+  details.entry > summary{list-style:none;cursor:pointer}
+  details.entry > summary::-webkit-details-marker{display:none}
+  details.entry > summary:hover .name{color:var(--accent)}
+  details.entry > summary:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
   .row{display:grid;grid-template-columns:1fr auto;gap:.2rem 1.5rem;
-       padding:1.05rem .9rem 1.05rem 0;border-bottom:1px solid var(--rule);align-items:baseline}
-  .row:nth-child(odd){background:linear-gradient(to right,rgba(200,48,95,.045),transparent 70%)}
+       padding:1.05rem .9rem 1.05rem 0;align-items:baseline}
+  .chev{grid-column:2;grid-row:1;font-size:.8rem;color:var(--muted);margin-left:.6rem}
+  details[open] .chev{transform:rotate(90deg);display:inline-block}
+  .panel{padding:0 .9rem 1.5rem 0;max-width:44em}
+  .panel dl{display:grid;grid-template-columns:auto 1fr;gap:.35rem 1.1rem;margin:0 0 1rem}
+  .panel dt{font-family:var(--display);font-weight:600;font-size:.78rem;color:var(--muted);
+            text-transform:uppercase;letter-spacing:.04em;padding-top:.15rem}
+  .panel dd{margin:0;font-size:.92rem}
+  .panel .sum{font-size:.95rem;line-height:1.6;color:var(--ink-soft);margin:0 0 .9rem}
+  .tag{display:inline-block;border:1px solid var(--rule);border-radius:2px;
+       padding:.08rem .45rem;margin:0 .3rem .3rem 0;font-size:.8rem}
+  .calc{font-size:.85rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:.7rem}
   .row .name{font-family:var(--display);font-weight:800;font-size:1.22rem;letter-spacing:-.02em}
   .row .meta{grid-column:1;font-size:.87rem;color:var(--muted);line-height:1.45}
   .row .pts{grid-row:1/3;grid-column:2;font-family:var(--display);font-weight:800;
@@ -151,7 +167,8 @@
 <header>
   <h1>Est-ce que tu sépares l'homme de l'artiste&nbsp;?</h1>
   <p class="lede">Dépose l'export de ta bibliothèque Spotify. L'outil croise tes
-  artistes avec une base d'affaires documentées, et te rend un chiffre discutable.</p>
+  artistes avec une base d'affaires judiciaires documentées, et mesure la place
+  qu'ils occupent dans ce que tu écoutes.</p>
 </header>
 
 <div class="meter" id="meter">
@@ -435,6 +452,13 @@
 
     res.rows.forEach(function(r){
       var pts = 100*r.contribution/ceiling;
+      var e = r.entry;
+      var label = STATUS[e.status] || e.status;
+      if(ONGOING[e.status]) label += " · en cours";
+
+      var det = document.createElement("details");
+      det.className = "entry";
+      var sum = document.createElement("summary");
       var el = document.createElement("div");
       el.className = "row";
 
@@ -443,8 +467,6 @@
 
       var meta = document.createElement("div");
       meta.className = "meta";
-      var label = STATUS[r.entry.status] || r.entry.status;
-      if(ONGOING[r.entry.status]) label += " · en cours";
       var bits = [label, r.n + (r.n>1 ? " titres" : " titre")];
       if(r.nDated) bits.push(r.nPost + " sur " + r.nDated + " ajoutés après révélation");
       meta.textContent = bits.join(" · ");
@@ -452,13 +474,18 @@
       var p = document.createElement("div");
       p.className = "pts";
       p.textContent = pts.toFixed(1);
+      var chev = document.createElement("span");
+      chev.className = "chev"; chev.textContent = "\u203A";
+      p.appendChild(chev);
 
       var bar = document.createElement("div");
       bar.className = "bar";
       bar.style.width = Math.max(3, 100*pts/maxPts) + "%";
 
       el.appendChild(n); el.appendChild(p); el.appendChild(meta); el.appendChild(bar);
-      box.appendChild(el);
+      sum.appendChild(el); det.appendChild(sum);
+      det.appendChild(panelFor(r, label, pts));
+      box.appendChild(det);
     });
 
     var note = [];
@@ -477,6 +504,64 @@
     } else { mem.hidden = true; }
 
     updateCalibText();
+  }
+
+  function panelFor(r, label, pts){
+    var e = r.entry;
+    var wrap = document.createElement("div");
+    wrap.className = "panel";
+
+    var dl = document.createElement("dl");
+    function line(term, build){
+      var dt = document.createElement("dt"); dt.textContent = term;
+      var dd = document.createElement("dd"); build(dd);
+      dl.appendChild(dt); dl.appendChild(dd);
+    }
+
+    line("Chefs", function(dd){
+      var cats = e.categories || [];
+      if(!cats.length){ dd.textContent = "non renseignés"; return; }
+      cats.forEach(function(c){
+        var t = document.createElement("span");
+        t.className = "tag"; t.textContent = c;
+        dd.appendChild(t);
+      });
+    });
+    line("Statut", function(dd){ dd.textContent = label; });
+    line("Public depuis", function(dd){
+      dd.textContent = e.public_since || "date non établie — le multiplicateur est neutralisé";
+    });
+    wrap.appendChild(dl);
+
+    if(e.summary){
+      var s = document.createElement("p");
+      s.className = "sum"; s.textContent = e.summary;
+      wrap.appendChild(s);
+    }
+
+    if((e.sources||[]).length){
+      var src = document.createElement("p");
+      src.className = "sum";
+      src.appendChild(document.createTextNode("Sources : "));
+      e.sources.forEach(function(u, i){
+        if(i) src.appendChild(document.createTextNode(" · "));
+        var a = document.createElement("a");
+        a.href = u; a.target = "_blank"; a.rel = "noopener";
+        try{ a.textContent = new URL(u).hostname.replace(/^www\./,""); }
+        catch(err){ a.textContent = "lien"; }
+        src.appendChild(a);
+      });
+      wrap.appendChild(src);
+    }
+
+    var calc = document.createElement("p");
+    calc.className = "calc";
+    calc.textContent = "Calcul : gravité " + Number(e.gravity||0) + "/5 × "
+      + (100*r.share).toFixed(2) + "% de ta bibliothèque × "
+      + r.km.toFixed(2) + " (connaissance de cause) = " + pts.toFixed(2) + " points.";
+    wrap.appendChild(calc);
+
+    return wrap;
   }
 
   function updateCalibText(){
