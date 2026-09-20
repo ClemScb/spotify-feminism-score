@@ -3,8 +3,8 @@
   "_schema": {
     "name": "Nom principal tel qu'il apparait sur Spotify",
     "aliases": "Autres graphies, nom civil, nom de groupe",
-    "status": "convicted | admitted | charged | accused_multiple | accused_single | dismissed | no_bill | acquitted | controversy",
-    "gravity": "0 a 5. Une entree a 0 est neutre : elle est connue de la base mais ne compte pas, ses titres sont des titres comme les autres.",
+    "status": "convicted | admitted | charged | accused_multiple | accused_single | dismissed | investigation | no_bill | acquitted | controversy",
+    "gravity": "0 a 5. Seul 'acquitted' (relaxe prononcee par une juridiction) vaut 0. Tout statut non tranche compte et s'affiche 'en cours'.",
     "categories": "Nature des faits",
     "public_since": "AAAA-MM ou l'affaire devient publique. Laisser vide si la date n'est pas etablie : le multiplicateur de connaissance de cause est alors neutralise.",
     "summary": "Une phrase factuelle, au statut judiciaire exact",
@@ -13,8 +13,8 @@
   "_regles": [
     "Uniquement des faits publics et documentes, jamais de rumeur.",
     "status decrit la realite judiciaire, gravity est notre ponderation.",
-    "Trois crans a ne jamais confondre : RELAXE (un tribunal a juge et declare non coupable) et PAS DE MISE EN ACCUSATION (l'enquete conclut a l'absence d'infraction) = gravite 0, neutre, la mise en cause est annulee et rien n'est compte ; CLASSE SANS SUITE (preuves insuffisantes) = l'affaire n'est pas tranchee, la gravite reste celle des accusations.",
-    "Hors perimetre : les polemiques portant sur des paroles de chansons, ou l'artiste met en scene un personnage. Le score suit des actes, pas des textes.",
+    "UNE SEULE SORTIE : la relaxe ou l'acquittement prononce par une juridiction, qui met la gravite a 0. Tout le reste - classement sans suite, enquete ouverte, refus de mise en accusation, proces en cours - signifie que l'affaire n'a PAS ete tranchee en faveur de la personne : ces entrees comptent et sont affichees 'en cours'.",
+    "Perimetre : toutes les condamnations, quelle que soit la nature des faits. Restent hors base les simples polemiques sur des paroles de chansons sans procedure.",
     "Si la date de revelation publique est incertaine, laisser public_since vide plutot que de deviner.",
     "Une entree sans source ne doit pas etre fusionnee."
   ],
@@ -87,12 +87,12 @@
       "name": "Travis Scott",
       "aliases": [],
       "status": "no_bill",
-      "gravity": 0,
+      "gravity": 3,
       "categories": [
         "securite du public"
       ],
       "public_since": "2021-11",
-      "summary": "Dix morts lors du festival Astroworld en novembre 2021. En juin 2023, un grand jury du comte de Harris a refuse de le mettre en accusation, le procureur indiquant qu'aucune infraction n'avait ete commise et qu'aucun individu n'etait penalement responsable. Des procedures civiles restent en cours. Gravite nulle : garde en memoire, sans effet sur le score. A supprimer si le perimetre du projet exclut les faits non genres.",
+      "summary": "Dix morts lors du festival Astroworld en novembre 2021. En juin 2023, un grand jury du comte de Harris a refuse de le mettre en accusation. Aucune juridiction n'a juge l'affaire et des procedures civiles restent en cours : ce n'est pas une relaxe, l'affaire n'est pas tranchee.",
       "sources": [
         "https://www.hollywoodreporter.com/news/music-news/travis-scott-no-criminal-charges-astroworld-tragedy-1235526518/"
       ]
@@ -109,6 +109,54 @@
       "summary": "Poursuivi par cinq associations feministes pour provocation a la violence envers les femmes. Condamne a 1 000 euros avec sursis en premiere instance en 2013, il a ete RELAXE en appel par la cour de Versailles le 18 fevrier 2016, celle-ci retenant qu'il mettait en scene des personnages. La justice ayant tranche en sa faveur, cette entree est neutre : ses titres comptent comme les autres.",
       "sources": [
         "https://www.franceinfo.fr/faits-divers/justice-proces/le-rappeur-orelsan-juge-pour-provocation-a-la-violence-contre-les-femmes-dans-plusieurs-chansons-relaxe-en-appel_1320549.html"
+      ]
+    },
+    {
+      "name": "Booba",
+      "aliases": [
+        "B2O"
+      ],
+      "status": "convicted",
+      "gravity": 3,
+      "categories": [
+        "violences volontaires en reunion"
+      ],
+      "public_since": "2018-08",
+      "summary": "Condamne en octobre 2018 a 18 mois de prison avec sursis et 50 000 euros d'amende pour la rixe de l'aeroport d'Orly en aout 2018, avec Kaaris et leurs entourages. En decembre 2019, les deux rappeurs ont en outre ete condamnes a payer plus de 45 000 euros de dommages. Faits de violence, non genres.",
+      "sources": [
+        "https://www.franceinfo.fr/faits-divers/rixe-entre-booba-et-kaaris-a-orly/bagarre-a-orly-booba-et-kaaris-condamnes-a-payer-45-500-euros-pour-les-degats_3751815.html"
+      ]
+    },
+    {
+      "name": "Kaaris",
+      "aliases": [],
+      "status": "convicted",
+      "gravity": 3,
+      "categories": [
+        "violences volontaires en reunion"
+      ],
+      "public_since": "2018-08",
+      "summary": "Condamne en octobre 2018 a 18 mois de prison avec sursis et 50 000 euros d'amende pour la rixe de l'aeroport d'Orly en aout 2018, aux cotes de Booba. Condamnation civile complementaire en decembre 2019. Faits de violence, non genres.",
+      "sources": [
+        "https://www.franceinfo.fr/faits-divers/rixe-entre-booba-et-kaaris-a-orly/bagarre-a-orly-booba-et-kaaris-condamnes-a-payer-45-500-euros-pour-les-degats_3751815.html"
+      ]
+    },
+    {
+      "name": "Freeze Corleone",
+      "aliases": [
+        "Freeze Corleone 667"
+      ],
+      "status": "investigation",
+      "gravity": 3,
+      "categories": [
+        "provocation a la haine raciale",
+        "antisemitisme"
+      ],
+      "public_since": "2020-09",
+      "summary": "Le parquet de Paris a ouvert une enquete le 17 septembre 2020 pour provocation a la haine raciale et injure a caractere raciste, visant plusieurs de ses clips et chansons, apres un signalement de la DILCRAH et de la LICRA. Universal Music France a rompu sa collaboration le lendemain, denoncant des propos racistes inacceptables. Issue de l'enquete non etablie a ce jour : affaire non tranchee.",
+      "sources": [
+        "https://www.rtbf.be/article/le-rappeur-freeze-corleone-lache-par-son-label-a-cause-de-ses-clips-juges-antisemites-10587582",
+        "https://fr.wikipedia.org/wiki/Freeze_Corleone"
       ]
     }
   ]

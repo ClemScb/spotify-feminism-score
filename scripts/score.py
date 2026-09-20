@@ -28,16 +28,20 @@ CEILING = 0.5            # valeur de S qui vaut 100/100
 BANNED_BONUS = 2.0       # points retires par artiste banni present dans la base
 BANNED_BONUS_CAP = 10.0
 
+# Statuts non tranches : l'affaire n'a pas ete jugee en faveur de la personne.
+ONGOING = {"charged", "accused_multiple", "accused_single", "dismissed", "investigation", "no_bill"}
+
 STATUS_LABELS = {
     "convicted": "condamne",
-    "admitted": "faits reconnus par l'artiste",
-    "charged": "poursuivi / mis en examen",
+    "admitted": "faits reconnus",
+    "charged": "poursuivi",
     "accused_multiple": "accusations multiples",
     "accused_single": "accusation isolee",
-    "dismissed": "classe sans suite (non tranche)",
+    "dismissed": "classe sans suite",
+    "investigation": "enquete ouverte",
     "no_bill": "pas de mise en accusation",
     "acquitted": "relaxe par un tribunal",
-    "controversy": "propos tenus en son nom propre",
+    "controversy": "propos en son nom propre",
 }
 
 
@@ -187,6 +191,7 @@ def compute(tracks, db, banned_names):
             "artist": name,
             "status": entry.get("status", "?"),
             "status_label": STATUS_LABELS.get(entry.get("status"), entry.get("status", "?")),
+            "ongoing": entry.get("status") in ONGOING,
             "gravity": gravity,
             "tracks": b["n"],
             "tracks_after_reveal": b["n_post"],
@@ -249,12 +254,12 @@ def render(res):
         out.append("  Cela peut vouloir dire que la base est incomplete.")
         return "\n".join(out)
 
-    out.append("  %-26s %-30s %6s %7s %8s" % ("ARTISTE", "STATUT", "TITRES", "APRES", "POINTS"))
-    out.append("  " + "-" * 79)
+    out.append("  %-24s %-34s %6s %7s %8s" % ("ARTISTE", "STATUT", "TITRES", "APRES", "POINTS"))
+    out.append("  " + "-" * 83)
     for r in res["detail"]:
-        out.append("  %-26s %-30s %6d %7s %+8.2f" % (
-            r["artist"][:26],
-            r["status_label"][:30],
+        out.append("  %-24s %-34s %6d %7s %+8.2f" % (
+            r["artist"][:24],
+            ((r["status_label"] + " \u00b7 en cours") if r["ongoing"] else r["status_label"])[:34],
             r["tracks"],
             "%d/%d" % (r["tracks_after_reveal"], r["tracks_dated"]) if r["tracks_dated"] else "n/d",
             r["points"],

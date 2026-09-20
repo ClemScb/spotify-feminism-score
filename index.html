@@ -37,23 +37,27 @@
     margin:0;background:var(--paper);color:var(--ink);
     font-family:var(--body);font-size:17px;line-height:1.6;
   }
-  .wrap{max-width:64rem;margin:0 auto;padding:0 1.5rem 6rem}
+  .wrap{max-width:62rem;margin:0 auto;padding:0 2rem 7rem}
+  .topbar{border-bottom:2px solid var(--ink);padding:1.1rem 0;margin-bottom:0;
+          display:flex;justify-content:space-between;align-items:baseline;gap:1rem}
+  .topbar b{font-family:var(--display);font-weight:800;font-size:.95rem;letter-spacing:-.01em}
+  .topbar span{font-size:.8rem;color:var(--muted)}
   p{max-width:38em}
   a{color:var(--accent)}
   a:hover{color:var(--ink)}
 
-  header{padding:4.5rem 0 2rem}
+  header{padding:5.5rem 0 2.5rem}
   h1{
     font-family:var(--display);font-weight:800;
-    font-size:clamp(2.2rem,6vw,4rem);line-height:1;letter-spacing:-.035em;
-    margin:0 0 1rem;max-width:13em;
+    font-size:clamp(2.4rem,7.2vw,4.9rem);line-height:.94;letter-spacing:-.045em;
+    margin:0 0 1.35rem;max-width:11.5em;
   }
-  .lede{font-size:1.1rem;color:var(--ink-soft);margin:0}
+  .lede{font-size:1.18rem;line-height:1.5;color:var(--ink-soft);margin:0;max-width:30em}
 
   /* instrument */
-  .meter{margin:2.75rem 0 0;position:relative}
+  .meter{margin:3.25rem 0 0;position:relative}
   .meter-track{
-    position:relative;height:104px;
+    position:relative;height:132px;
     border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);
     background:repeating-linear-gradient(to right,var(--rule) 0 1px,transparent 1px 10%);
   }
@@ -67,12 +71,14 @@
   .readout{
     position:absolute;top:50%;transform:translateY(-50%);left:1.5rem;
     font-family:var(--display);font-weight:800;font-variant-numeric:tabular-nums;
-    font-size:clamp(2.8rem,10vw,5.2rem);line-height:1;letter-spacing:-.045em;pointer-events:none;
+    font-size:clamp(3rem,11vw,6.2rem);line-height:.9;letter-spacing:-.055em;pointer-events:none;
   }
   .readout small{font-size:.26em;font-weight:600;letter-spacing:0;margin-left:.45em}
-  .scale{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);
-         font-variant-numeric:tabular-nums;padding-top:.5rem}
-  .verdict{font-family:var(--display);font-weight:600;font-size:1.05rem;margin:1.1rem 0 0;color:var(--accent)}
+  .scale{display:flex;justify-content:space-between;font-family:var(--display);
+         font-weight:600;font-size:.7rem;color:var(--muted);
+         font-variant-numeric:tabular-nums;padding-top:.55rem}
+  .verdict{font-family:var(--display);font-weight:800;font-size:1.5rem;letter-spacing:-.025em;
+           margin:1.4rem 0 0;color:var(--accent);max-width:18em;line-height:1.15}
 
   /* depot */
   .drop{
@@ -85,28 +91,32 @@
   .drop:focus-visible{outline:2px solid var(--accent);outline-offset:-5px}
   .drop span{font-family:var(--body);font-weight:400;font-size:.88rem;margin-top:.2rem;color:var(--muted)}
   .dragover .drop{background:rgba(200,48,95,.16);color:var(--ink)}
-  .getfile{margin:.9rem 0 0;font-size:.95rem;color:var(--muted);max-width:38em}
+  .getfile{margin:1.1rem 0 0;font-size:.95rem;color:var(--muted);max-width:34em;line-height:1.55}
 
   /* reglage */
-  .calib{margin:2.5rem 0 0;padding:1.4rem 0 0;border-top:2px solid var(--ink)}
+  .calib{margin:3rem 0 0;padding:1.5rem 0 0;border-top:1px solid var(--rule)}
   .calib label{font-family:var(--display);font-weight:600;font-size:.95rem;display:block;margin-bottom:.7rem}
   .calib input[type=range]{width:min(100%,26rem);accent-color:var(--accent)}
   .calib p{font-size:.92rem;color:var(--muted);margin:.7rem 0 0}
 
-  .stats{display:flex;flex-wrap:wrap;gap:2.75rem;margin:2.5rem 0 0}
-  .stat b{display:block;font-family:var(--display);font-weight:800;font-size:2.1rem;
-          line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
-  .stat span{font-size:.9rem;color:var(--muted)}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);margin:3rem 0 0;
+         border-top:2px solid var(--ink);border-bottom:1px solid var(--rule)}
+  .stat{padding:1.25rem 1.25rem 1.35rem 0}
+  .stat + .stat{border-left:1px solid var(--rule);padding-left:1.5rem}
+  .stat b{display:block;font-family:var(--display);font-weight:800;font-size:2.6rem;
+          line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+  .stat span{display:block;font-size:.85rem;color:var(--muted);padding-top:.4rem;max-width:14em}
 
-  h2{font-family:var(--display);font-weight:600;font-size:1.05rem;margin:3.5rem 0 .75rem;
-     padding-bottom:.5rem;border-bottom:2px solid var(--ink)}
-  .row{display:grid;grid-template-columns:1fr auto;gap:.15rem 1.5rem;padding:.95rem 0;
-       border-bottom:1px solid var(--rule);align-items:baseline}
-  .row .name{font-family:var(--display);font-weight:600;font-size:1.02rem}
-  .row .meta{grid-column:1;font-size:.88rem;color:var(--muted)}
+  h2{font-family:var(--display);font-weight:800;font-size:1.35rem;letter-spacing:-.025em;
+     margin:4rem 0 1rem;padding-bottom:.6rem;border-bottom:2px solid var(--ink)}
+  .row{display:grid;grid-template-columns:1fr auto;gap:.2rem 1.5rem;
+       padding:1.05rem .9rem 1.05rem 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  .row:nth-child(odd){background:linear-gradient(to right,rgba(200,48,95,.045),transparent 70%)}
+  .row .name{font-family:var(--display);font-weight:800;font-size:1.22rem;letter-spacing:-.02em}
+  .row .meta{grid-column:1;font-size:.87rem;color:var(--muted);line-height:1.45}
   .row .pts{grid-row:1/3;grid-column:2;font-family:var(--display);font-weight:800;
-            font-variant-numeric:tabular-nums;font-size:1.3rem;color:var(--accent)}
-  .bar{grid-column:1/-1;height:4px;background:var(--accent);margin-top:.55rem;min-width:3px}
+            font-variant-numeric:tabular-nums;font-size:1.7rem;letter-spacing:-.03em;color:var(--accent)}
+  .bar{grid-column:1/-1;height:5px;background:var(--accent);margin-top:.7rem;min-width:3px}
 
   ol{max-width:38em;padding-left:1.2rem}
   ol li{margin-bottom:.45rem}
@@ -116,9 +126,15 @@
   [hidden]{display:none !important}
 
   @media (prefers-reduced-motion:reduce){.needle,.fill{transition:none}}
+  @media (max-width:760px){
+    .stats{grid-template-columns:1fr;border-bottom:none}
+    .stat + .stat{border-left:0;border-top:1px solid var(--rule);padding-left:0}
+  }
   @media (max-width:640px){
     body{font-size:16px}
-    .meter-track{height:72px}
+    .wrap{padding:0 1.25rem 5rem}
+    .meter-track{height:84px}
+    .row .name{font-size:1.1rem}
     .readout{position:static;transform:none;padding:1rem 0 0}
     .stats{gap:1.75rem}
   }
@@ -127,10 +143,15 @@
 <body>
 <div class="wrap">
 
+<div class="topbar">
+  <b>Score de caution</b>
+  <span>Calcul local — rien ne quitte ton navigateur</span>
+</div>
+
 <header>
   <h1>Est-ce que tu sépares l'homme de l'artiste&nbsp;?</h1>
-  <p class="lede">Dépose l'export de ta bibliothèque Spotify. Le calcul se fait dans
-  ton navigateur, rien n'est envoyé nulle part.</p>
+  <p class="lede">Dépose l'export de ta bibliothèque Spotify. L'outil croise tes
+  artistes avec une base d'affaires documentées, et te rend un chiffre discutable.</p>
 </header>
 
 <div class="meter" id="meter">
@@ -171,9 +192,9 @@
 
   <div id="memory" hidden>
     <h2>Pour mémoire</h2>
-    <p class="note">Ces artistes sont dans la base, mais la justice a tranché en leur
-    faveur : la mise en cause est annulée, leurs titres comptent comme les autres et
-    n'entrent ni dans le score ni dans les pourcentages.</p>
+    <p class="note">Une juridiction a tranché en leur faveur. La mise en cause est
+    annulée : leurs titres comptent comme les autres et n'entrent ni dans le score ni
+    dans les pourcentages.</p>
     <p class="note" id="memoryList"></p>
   </div>
 </div>
@@ -191,11 +212,12 @@
 </div>
 
 <footer>
-  <p class="note">Deux situations judiciaires à ne pas confondre, et que ce score
-  traite différemment : une relaxe prononcée par un tribunal, comme une absence de
-  mise en accusation, annule la mise en cause — les titres redeviennent des titres
-  comme les autres. Un classement sans suite, lui, signifie seulement que les preuves
-  ont manqué : l'affaire n'a pas été tranchée, et compte donc comme une accusation.
+  <p class="note">Une seule situation fait sortir quelqu'un du score : la relaxe ou
+  l'acquittement prononcé par une juridiction. Tout le reste — classement sans suite,
+  enquête ouverte, refus de mise en accusation, procès en cours — signifie que
+  l'affaire n'a pas été tranchée en faveur de la personne, et reste au compteur avec
+  la mention «&nbsp;en cours&nbsp;». Toutes les natures de condamnation sont prises en
+  compte.
   Les polémiques portant sur des paroles de chansons sont hors périmètre. La méthode
   complète est dans <a href="SCORING.md">SCORING.md</a>, et elle est faite pour être
   contestée.</p>
@@ -218,11 +240,16 @@
     charged:"poursuivi ou mis en examen",
     accused_multiple:"accusations multiples",
     accused_single:"accusation isolée",
-    dismissed:"classé sans suite, affaire non tranchée",
+    dismissed:"classé sans suite",
+    investigation:"enquête ouverte",
     no_bill:"pas de mise en accusation",
     acquitted:"relaxé par un tribunal",
     controversy:"propos tenus en son nom propre"
   };
+
+  // Statuts non tranchés : l'affaire n'a pas été jugée en faveur de la personne.
+  var ONGOING = {charged:1, accused_multiple:1, accused_single:1,
+                 dismissed:1, investigation:1, no_bill:1};
 
   var $ = function(id){ return document.getElementById(id); };
 
@@ -416,8 +443,9 @@
 
       var meta = document.createElement("div");
       meta.className = "meta";
-      var bits = [STATUS[r.entry.status] || r.entry.status,
-                  r.n + (r.n>1 ? " titres" : " titre")];
+      var label = STATUS[r.entry.status] || r.entry.status;
+      if(ONGOING[r.entry.status]) label += " · en cours";
+      var bits = [label, r.n + (r.n>1 ? " titres" : " titre")];
       if(r.nDated) bits.push(r.nPost + " sur " + r.nDated + " ajoutés après révélation");
       meta.textContent = bits.join(" · ");
 

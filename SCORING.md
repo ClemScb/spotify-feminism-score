@@ -8,50 +8,40 @@ probablement qu'une de ces valeurs ne correspond pas à ton intuition — change
 
 ### 1. Gravité (`gravity`, 0 à 5)
 
-| Valeur | Statut | Ce que ça décrit |
-|--------|--------|------------------|
-| 5 | `convicted` | Condamnation définitive pour des faits graves |
-| 4 | `admitted` | Faits reconnus publiquement par l'artiste |
-| 4 | `charged` | Mise en examen, procès en cours |
-| 3 | `accused_multiple` | Accusations multiples, documentées, concordantes |
-| 3 | `dismissed` | Classement sans suite : l'affaire **n'a pas été tranchée** |
-| 2 | `accused_single` | Accusation isolée, publique et documentée |
-| 2 | `controversy` | Propos tenus par l'artiste en son nom propre |
-| 0 | `no_bill` | Pas de mise en accusation : l'enquête conclut à l'absence d'infraction |
-| 0 | `acquitted` | **Relaxe prononcée par un tribunal** |
+| Valeur | Statut | Ce que ça décrit | Compte |
+|--------|--------|------------------|--------|
+| 5 | `convicted` | Condamnation définitive, quelle que soit la nature des faits | oui |
+| 4 | `admitted` | Faits reconnus publiquement par l'artiste | oui |
+| 4 | `charged` | Mise en examen, procès en cours | en cours |
+| 3 | `accused_multiple` | Accusations multiples, documentées, concordantes | en cours |
+| 3 | `dismissed` | Classement sans suite, faute de preuves | en cours |
+| 3 | `investigation` | Enquête ouverte, issue non établie | en cours |
+| 3 | `no_bill` | Pas de mise en accusation, jamais jugé | en cours |
+| 2 | `accused_single` | Accusation isolée, publique et documentée | en cours |
+| 2 | `controversy` | Propos tenus par l'artiste en son nom propre | oui |
+| 0 | `acquitted` | **Relaxe ou acquittement prononcé par une juridiction** | non |
 
-Les trois crans du bas ne doivent jamais être confondus, et c'est le point le plus
-important de ce fichier.
-
-Une **relaxe** est un jugement : une juridiction a examiné l'affaire et déclaré la
+Il n'y a **qu'une seule sortie** : une juridiction a examiné l'affaire et déclaré la
 personne non coupable. Si la justice a tranché en sa faveur, il faut lui faire
-confiance. La mise en cause est donc annulée, sans plus : l'entrée ne coûte rien,
-mais elle ne rapporte rien non plus. Les titres de cet artiste redeviennent des
-titres comme les autres, et sortent aussi des deux pourcentages.
+confiance. Ses titres redeviennent des titres comme les autres et sortent aussi des
+deux pourcentages ; l'entrée reste visible sous « Pour mémoire », parce que savoir
+qu'une affaire a existé et comment elle s'est terminée a de la valeur.
 
-Une **absence de mise en accusation** produit le même effet : l'enquête n'a pas
-trouvé d'infraction, la gravité est nulle.
+Tout le reste — classement sans suite, enquête ouverte, refus de mise en accusation,
+procès en cours — veut dire que l'affaire n'a **pas** été tranchée en faveur de la
+personne. Un parquet qui manque de preuves ne prononce pas une innocence, et de
+nouvelles plaintes restent possibles. Ces entrées comptent, et portent la mention
+« en cours » pour que le lecteur ne les confonde jamais avec une condamnation.
 
-Les entrées à gravité nulle restent dans la base et s'affichent sous « Pour
-mémoire ». Elles sont conservées parce que l'information a de la valeur — savoir
-qu'une affaire a existé et comment elle s'est terminée — mais elles ne pèsent
-nulle part.
-
-Un **classement sans suite** signifie que le parquet estime les preuves
-insuffisantes. Aucune juridiction n'a jugé, les faits ne sont ni établis ni
-écartés, et de nouvelles plaintes restent possibles. C'est donc traité comme une
-affaire ouverte, à la gravité des accusations — et surtout pas comme une relaxe.
-
-La gravité et le statut sont deux champs distincts : le statut décrit la réalité
-judiciaire, la gravité est la pondération qu'on choisit de lui donner. On peut
-ajuster l'une sans falsifier l'autre.
+Toutes les natures de condamnation entrent dans la base : violences sexuelles,
+violences volontaires, haine raciale, mise en danger. La gravité permet ensuite de
+pondérer entre elles — une rixe avec sursis et un viol n'ont pas à peser pareil.
 
 ### Ce qui est hors périmètre
 
-Les polémiques portant sur des **paroles de chansons** n'entrent pas dans la base.
-Un texte où l'artiste met en scène un personnage n'est pas un acte, et le score
-suit des actes. Les propos tenus par l'artiste en son nom propre, eux, restent
-dans le périmètre.
+Les polémiques portant sur des **paroles de chansons** qui n'ont donné lieu à aucune
+procédure. Un texte où l'artiste met en scène un personnage n'est pas un acte. Dès
+qu'une enquête est ouverte, en revanche, l'affaire entre dans la base.
 
 ### 2. Exposition
 
