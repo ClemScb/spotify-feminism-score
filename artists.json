@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "_schema": {
+    "name": "Nom principal tel qu'il apparait sur Spotify",
+    "aliases": "Autres graphies, nom civil, nom de groupe (liste)",
+    "status": "convicted | charged | accused_multiple | accused_single | controversy | cleared",
+    "gravity": "0 a 5, la ponderation choisie pour ce statut (voir SCORING.md)",
+    "categories": "Nature des faits (liste libre)",
+    "public_since": "AAAA-MM du moment ou l'affaire devient publique",
+    "summary": "Une phrase factuelle, au statut judiciaire exact",
+    "sources": "URLs verifiables (presse etablie, decisions de justice)"
+  },
+  "_regles": [
+    "Uniquement des faits publics et documentes, jamais de rumeur.",
+    "Le champ status decrit la realite judiciaire, gravity est notre ponderation.",
+    "Ne jamais ecrire 'condamne' pour une personne seulement accusee.",
+    "public_since conditionne tout le calcul de connaissance de cause : le renseigner avec soin.",
+    "Une entree sans source ne doit pas etre fusionnee."
+  ],
+  "artists": [
+    {
+      "name": "EXEMPLE — supprimer cette entree",
+      "aliases": [],
+      "status": "accused_multiple",
+      "gravity": 3,
+      "categories": ["exemple"],
+      "public_since": "2019-10",
+      "summary": "Entree modele. Le script ignore toute entree dont le nom commence par EXEMPLE.",
+      "sources": ["https://exemple.invalid/article"]
+    }
+  ]
+}
