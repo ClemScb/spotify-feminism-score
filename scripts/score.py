@@ -30,11 +30,14 @@ BANNED_BONUS_CAP = 10.0
 
 STATUS_LABELS = {
     "convicted": "condamne",
+    "admitted": "faits reconnus par l'artiste",
     "charged": "poursuivi / mis en examen",
     "accused_multiple": "accusations multiples",
     "accused_single": "accusation isolee",
-    "controversy": "propos / comportements",
-    "cleared": "classe / relaxe",
+    "dismissed": "classe sans suite (non tranche)",
+    "no_bill": "pas de mise en accusation",
+    "acquitted": "relaxe par un tribunal",
+    "controversy": "propos tenus en son nom propre",
 }
 
 
@@ -50,16 +53,17 @@ def normalize(name):
 
 
 def split_artists(field):
-    """Exportify separe les artistes multiples par des virgules."""
-    parts = re.split(r"\s*,\s*|\s+feat\.?\s+|\s+&\s+", field)
-    return [p.strip() for p in parts if p.strip()]
+    """Exportify separe les artistes multiples par des POINTS-VIRGULES.
+    Ne jamais couper sur la virgule ni sur & : cela detruirait des noms
+    d'artistes ("Tyler, The Creator", "Earth, Wind & Fire", "Polo & Pan")."""
+    return [p.strip() for p in field.split(";") if p.strip()]
 
 
 # --- Lecture des entrees ---------------------------------------------------
 
 def load_csv(path):
     """Retourne une liste de (artiste, titre, date_ajout|None)."""
-    tracks = []
+    tracks, seen = [], []
     with open(path, newline="", encoding="utf-8-sig") as fh:
         reader = csv.DictReader(fh)
         cols = {c.lower().strip(): c for c in (reader.fieldnames or [])}
@@ -71,8 +75,10 @@ def load_csv(path):
         for row in reader:
             title = (row.get(title_col) or "").strip() if title_col else ""
             added = parse_date(row.get(added_col)) if added_col else None
+            tid = len(seen)
+            seen.append(tid)
             for artist in split_artists(row.get(artist_col) or ""):
-                tracks.append((artist, title, added))
+                tracks.append((artist, title, added, tid))
     return tracks
 
 
@@ -85,7 +91,7 @@ def load_library_json(path):
         artist = (item.get("artist") or "").strip()
         title = (item.get("track") or "").strip()
         if artist:
-            tracks.append((artist, title, None))
+            tracks.append((artist, title, None, len(tracks)))
     banned = [b.get("name", "") for b in data.get("bannedArtists", []) if b.get("name")]
     return tracks, banned
 
@@ -130,20 +136,24 @@ def load_artists_db(path):
 # --- Calcul ----------------------------------------------------------------
 
 def compute(tracks, db, banned_names):
-    total = len(tracks)
+    # total = nombre de titres distincts, pas de paires artiste-titre
+    total = len({t[3] for t in tracks})
     if total == 0:
         sys.exit("Aucun titre lu dans le fichier.")
 
-    all_artists = {normalize(a) for a, _, _ in tracks}
+    all_artists = {normalize(t[0]) for t in tracks}
     per_artist = defaultdict(lambda: {"n": 0, "n_post": 0, "n_dated": 0})
+    flagged_ids = set()
 
-    for artist, _title, added in tracks:
+    for artist, _title, added, tid in tracks:
         entry = db.get(normalize(artist))
         if not entry:
             continue
         bucket = per_artist[entry["name"]]
         bucket["entry"] = entry
         bucket["n"] += 1
+        if float(entry.get("gravity", 0)) > 0:
+            flagged_ids.add(tid)
         since = parse_public_since(entry.get("public_since"))
         if added and since:
             bucket["n_dated"] += 1
@@ -152,18 +162,27 @@ def compute(tracks, db, banned_names):
 
     rows = []
     S = 0.0
-    flagged_tracks = 0
+    flagged_tracks = len(flagged_ids)
 
+    neutral = []
     for name, b in per_artist.items():
         entry = b["entry"]
         gravity = float(entry.get("gravity", 0))
+        if gravity == 0:
+            # Relaxe ou absence de mise en accusation : la mise en cause est annulee.
+            # On la garde en memoire, elle ne compte nulle part.
+            neutral.append({"artist": name,
+                            "status_label": STATUS_LABELS.get(entry.get("status"), entry.get("status", "?")),
+                            "tracks": b["n"]})
+            continue
         share = b["n"] / total
+        # La connaissance de cause n'aggrave que ce qui est a charge.
+        # Elle ne s'applique pas a une gravite negative (relaxe).
         km = 1.0
-        if b["n_dated"]:
+        if b["n_dated"] and gravity > 0:
             km = 1.0 + KNOWLEDGE_WEIGHT * (b["n_post"] / b["n_dated"])
         contribution = (gravity / 5.0) * share * km
         S += contribution
-        flagged_tracks += b["n"]
         rows.append({
             "artist": name,
             "status": entry.get("status", "?"),
@@ -179,6 +198,7 @@ def compute(tracks, db, banned_names):
 
     rows.sort(key=lambda r: r["contribution"], reverse=True)
 
+    # S peut etre negatif : une relaxe rend des points.
     score = 100.0 * min(1.0, S / CEILING)
 
     banned_hits = [n for n in banned_names if normalize(n) in db]
@@ -200,6 +220,7 @@ def compute(tracks, db, banned_names):
         "total_artists": len(all_artists),
         "flagged_tracks": flagged_tracks,
         "flagged_artists": len(rows),
+        "neutral": sorted(neutral, key=lambda r: -r["tracks"]),
         "pct_artists": round(100 * len(rows) / max(1, len(all_artists)), 1),
         "pct_tracks": round(100 * flagged_tracks / total, 1),
         "detail": rows,
@@ -228,17 +249,22 @@ def render(res):
         out.append("  Cela peut vouloir dire que la base est incomplete.")
         return "\n".join(out)
 
-    out.append("  %-28s %-26s %6s %8s %7s" % ("ARTISTE", "STATUT", "TITRES", "APRES", "POINTS"))
+    out.append("  %-26s %-30s %6s %7s %8s" % ("ARTISTE", "STATUT", "TITRES", "APRES", "POINTS"))
     out.append("  " + "-" * 79)
     for r in res["detail"]:
-        out.append("  %-28s %-26s %6d %8s %7.2f" % (
-            r["artist"][:28],
-            r["status_label"][:26],
+        out.append("  %-26s %-30s %6d %7s %+8.2f" % (
+            r["artist"][:26],
+            r["status_label"][:30],
             r["tracks"],
             "%d/%d" % (r["tracks_after_reveal"], r["tracks_dated"]) if r["tracks_dated"] else "n/d",
             r["points"],
         ))
     out.append("")
+    if res["neutral"]:
+        out.append("  Pour memoire, presents dans ta bibliotheque et sans effet sur le score :")
+        for n in res["neutral"]:
+            out.append("    %s (%s, %d titres)" % (n["artist"], n["status_label"], n["tracks"]))
+        out.append("")
     out.append("  APRES = titres ajoutes apres que l'affaire soit publique.")
     out.append("  Ponderations et limites : voir SCORING.md")
     return "\n".join(out)

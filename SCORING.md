@@ -8,18 +8,50 @@ probablement qu'une de ces valeurs ne correspond pas à ton intuition — change
 
 ### 1. Gravité (`gravity`, 0 à 5)
 
-| Valeur | Statut | Exemples de situations |
-|--------|--------|------------------------|
+| Valeur | Statut | Ce que ça décrit |
+|--------|--------|------------------|
 | 5 | `convicted` | Condamnation définitive pour des faits graves |
-| 4 | `charged` | Mise en examen, procès en cours, condamnation en appel |
+| 4 | `admitted` | Faits reconnus publiquement par l'artiste |
+| 4 | `charged` | Mise en examen, procès en cours |
 | 3 | `accused_multiple` | Accusations multiples, documentées, concordantes |
+| 3 | `dismissed` | Classement sans suite : l'affaire **n'a pas été tranchée** |
 | 2 | `accused_single` | Accusation isolée, publique et documentée |
-| 1 | `controversy` | Propos ou comportements problématiques, sans procédure |
-| 0 | `cleared` | Affaire classée, relaxe, accusation retirée |
+| 2 | `controversy` | Propos tenus par l'artiste en son nom propre |
+| 0 | `no_bill` | Pas de mise en accusation : l'enquête conclut à l'absence d'infraction |
+| 0 | `acquitted` | **Relaxe prononcée par un tribunal** |
 
-La gravité et le statut sont deux champs distincts dans `artists.json` : le statut
-décrit la réalité judiciaire, la gravité est la pondération qu'on choisit de lui
-donner. On peut donc ajuster l'une sans falsifier l'autre.
+Les trois crans du bas ne doivent jamais être confondus, et c'est le point le plus
+important de ce fichier.
+
+Une **relaxe** est un jugement : une juridiction a examiné l'affaire et déclaré la
+personne non coupable. Si la justice a tranché en sa faveur, il faut lui faire
+confiance. La mise en cause est donc annulée, sans plus : l'entrée ne coûte rien,
+mais elle ne rapporte rien non plus. Les titres de cet artiste redeviennent des
+titres comme les autres, et sortent aussi des deux pourcentages.
+
+Une **absence de mise en accusation** produit le même effet : l'enquête n'a pas
+trouvé d'infraction, la gravité est nulle.
+
+Les entrées à gravité nulle restent dans la base et s'affichent sous « Pour
+mémoire ». Elles sont conservées parce que l'information a de la valeur — savoir
+qu'une affaire a existé et comment elle s'est terminée — mais elles ne pèsent
+nulle part.
+
+Un **classement sans suite** signifie que le parquet estime les preuves
+insuffisantes. Aucune juridiction n'a jugé, les faits ne sont ni établis ni
+écartés, et de nouvelles plaintes restent possibles. C'est donc traité comme une
+affaire ouverte, à la gravité des accusations — et surtout pas comme une relaxe.
+
+La gravité et le statut sont deux champs distincts : le statut décrit la réalité
+judiciaire, la gravité est la pondération qu'on choisit de lui donner. On peut
+ajuster l'une sans falsifier l'autre.
+
+### Ce qui est hors périmètre
+
+Les polémiques portant sur des **paroles de chansons** n'entrent pas dans la base.
+Un texte où l'artiste met en scène un personnage n'est pas un acte, et le score
+suit des actes. Les propos tenus par l'artiste en son nom propre, eux, restent
+dans le périmètre.
 
 ### 2. Exposition
 
@@ -37,6 +69,9 @@ devenue publique. Les titres ajoutés après cette date déclenchent un multipli
 ```
 km = 1 + KNOWLEDGE_WEIGHT × (titres_ajoutés_après / titres_total_artiste)
 ```
+
+Le multiplicateur ne s'applique qu'aux gravités positives : la connaissance de
+cause aggrave ce qui est à charge, et n'a aucun sens pour une entrée neutre.
 
 Avec `KNOWLEDGE_WEIGHT = 1.0` par défaut, le multiplicateur va de 1 (tout ajouté
 avant) à 2 (tout ajouté après). Sans date d'ajout dans le fichier, `km = 1` :

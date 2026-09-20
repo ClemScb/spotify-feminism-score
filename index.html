@@ -2,138 +2,125 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Score de caution — bibliothèque Spotify</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#DEDCE6;
-    --ink:#211E2B;
-    --rule:#9A95AC;
-    --quiet:#55506B;
-    --signal:#7A2E3C;
-    --sans:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
-    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --paper:#F3F0E8;
+    --paper2:#E6E1D2;
+    --ink:#1B2244;
+    --ink-soft:#4A4E68;
+    --muted:#6D6F85;
+    --rule:#C9C4B4;
+    --accent:#C8305F;
+    --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+    --body:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
+  }
+  :root:not([data-theme="light"]){ color-scheme:light }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#171A2E; --paper2:#232742; --ink:#F3F0E8; --ink-soft:#C6C4D4;
+      --muted:#9A99AE; --rule:#3A3E58; --accent:#F0578B; color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#171A2E; --paper2:#232742; --ink:#F3F0E8; --ink-soft:#C6C4D4;
+    --muted:#9A99AE; --rule:#3A3E58; --accent:#F0578B; color-scheme:dark;
   }
   *{box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%}
+  html{-webkit-text-size-adjust:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+  :root{padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
   body{
     margin:0;background:var(--paper);color:var(--ink);
-    font-family:var(--serif);font-size:18px;line-height:1.65;font-weight:300;
+    font-family:var(--body);font-size:17px;line-height:1.6;
   }
-  .wrap{max-width:66rem;margin:0 auto;padding:0 1.5rem 6rem}
-  p{max-width:36em}
+  .wrap{max-width:64rem;margin:0 auto;padding:0 1.5rem 6rem}
+  p{max-width:38em}
+  a{color:var(--accent)}
+  a:hover{color:var(--ink)}
 
-  /* ---- en-tete ---- */
-  header{padding:4.5rem 0 2.5rem}
+  header{padding:4.5rem 0 2rem}
   h1{
-    font-family:var(--sans);font-weight:800;font-size:clamp(2.1rem,5.5vw,3.6rem);
-    line-height:1.02;letter-spacing:-.025em;margin:0 0 1rem;max-width:14em;
+    font-family:var(--display);font-weight:800;
+    font-size:clamp(2.2rem,6vw,4rem);line-height:1;letter-spacing:-.035em;
+    margin:0 0 1rem;max-width:13em;
   }
-  .lede{font-size:1.15rem;color:var(--quiet);margin:0}
+  .lede{font-size:1.1rem;color:var(--ink-soft);margin:0}
 
-  /* ---- instrument ---- */
-  .meter{margin:3rem 0 0;position:relative}
+  /* instrument */
+  .meter{margin:2.75rem 0 0;position:relative}
   .meter-track{
-    position:relative;height:96px;
-    border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);
-    background:
-      repeating-linear-gradient(to right,
-        var(--rule) 0 1px, transparent 1px 10%);
+    position:relative;height:104px;
+    border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);
+    background:repeating-linear-gradient(to right,var(--rule) 0 1px,transparent 1px 10%);
   }
-  .meter-track::after{
-    content:"";position:absolute;inset:0;
-    background:linear-gradient(to right,transparent,rgba(122,46,60,.08));
-    pointer-events:none;
-  }
+  .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--accent);opacity:.22;
+        transition:width .9s cubic-bezier(.22,1,.36,1)}
   .needle{
-    position:absolute;top:-10px;bottom:-10px;left:0;width:2px;
-    background:var(--signal);transform:translateX(-1px);
-    transition:left .9s cubic-bezier(.22,1,.36,1);
+    position:absolute;top:-12px;bottom:-12px;left:0;width:3px;background:var(--accent);
+    transform:translateX(-1px);transition:left .9s cubic-bezier(.22,1,.36,1);
   }
-  .needle::before{
-    content:"";position:absolute;top:-6px;left:-4px;
-    border:5px solid transparent;border-top-color:var(--signal);
-  }
-  .needle.rest{opacity:.3}
-  .scale{
-    display:flex;justify-content:space-between;
-    font-family:var(--sans);font-size:.72rem;color:var(--quiet);
-    font-variant-numeric:tabular-nums;padding-top:.5rem;
-  }
+  .needle.rest{opacity:.25}
   .readout{
-    position:absolute;top:50%;transform:translateY(-50%);left:1.25rem;
-    font-family:var(--sans);font-weight:800;font-variant-numeric:tabular-nums;
-    font-size:clamp(2.6rem,9vw,5rem);line-height:1;letter-spacing:-.04em;
-    pointer-events:none;
+    position:absolute;top:50%;transform:translateY(-50%);left:1.5rem;
+    font-family:var(--display);font-weight:800;font-variant-numeric:tabular-nums;
+    font-size:clamp(2.8rem,10vw,5.2rem);line-height:1;letter-spacing:-.045em;pointer-events:none;
   }
-  .readout small{font-size:.28em;font-weight:600;letter-spacing:0;margin-left:.4em}
-  .verdict{
-    font-family:var(--sans);font-size:1rem;font-weight:600;
-    margin:1.25rem 0 0;color:var(--signal);
-  }
+  .readout small{font-size:.26em;font-weight:600;letter-spacing:0;margin-left:.45em}
+  .scale{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);
+         font-variant-numeric:tabular-nums;padding-top:.5rem}
+  .verdict{font-family:var(--display);font-weight:600;font-size:1.05rem;margin:1.1rem 0 0;color:var(--accent)}
 
-  /* ---- depot ---- */
+  /* depot */
   .drop{
-    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    text-align:center;padding:1rem;cursor:pointer;
-    font-family:var(--sans);font-size:.95rem;font-weight:600;color:var(--quiet);
-    background:transparent;border:0;width:100%;
+    position:absolute;inset:0;width:100%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;padding:1rem;
+    cursor:pointer;background:transparent;border:0;color:var(--ink-soft);
+    font-family:var(--display);font-weight:600;font-size:1rem;
   }
-  .drop:hover,.drop:focus-visible{color:var(--ink);background:rgba(33,30,43,.04)}
-  .drop:focus-visible{outline:2px solid var(--signal);outline-offset:-4px}
-  .drop span{display:block;font-family:var(--serif);font-weight:300;font-size:.9rem;margin-top:.15rem}
-  .dragover .drop{background:rgba(122,46,60,.1);color:var(--ink)}
+  .drop:hover,.drop:focus-visible{color:var(--ink);background:rgba(200,48,95,.07)}
+  .drop:focus-visible{outline:2px solid var(--accent);outline-offset:-5px}
+  .drop span{font-family:var(--body);font-weight:400;font-size:.88rem;margin-top:.2rem;color:var(--muted)}
+  .dragover .drop{background:rgba(200,48,95,.16);color:var(--ink)}
+  .getfile{margin:.9rem 0 0;font-size:.95rem;color:var(--muted);max-width:38em}
 
-  /* ---- reglage ---- */
-  .calib{margin:2.5rem 0 0;padding:1.25rem 0;border-top:1px solid var(--rule)}
-  .calib label{
-    font-family:var(--sans);font-size:.85rem;font-weight:600;
-    display:block;margin-bottom:.6rem;
-  }
-  .calib input[type=range]{width:min(100%,26rem);accent-color:var(--signal)}
-  .calib p{font-size:.92rem;color:var(--quiet);margin:.6rem 0 0}
+  /* reglage */
+  .calib{margin:2.5rem 0 0;padding:1.4rem 0 0;border-top:2px solid var(--ink)}
+  .calib label{font-family:var(--display);font-weight:600;font-size:.95rem;display:block;margin-bottom:.7rem}
+  .calib input[type=range]{width:min(100%,26rem);accent-color:var(--accent)}
+  .calib p{font-size:.92rem;color:var(--muted);margin:.7rem 0 0}
 
-  /* ---- chiffres ---- */
-  .stats{display:flex;flex-wrap:wrap;gap:2.5rem;margin:2.5rem 0 0}
-  .stat b{
-    display:block;font-family:var(--sans);font-weight:800;
-    font-size:2rem;line-height:1.1;font-variant-numeric:tabular-nums;
-  }
-  .stat span{font-size:.92rem;color:var(--quiet)}
+  .stats{display:flex;flex-wrap:wrap;gap:2.75rem;margin:2.5rem 0 0}
+  .stat b{display:block;font-family:var(--display);font-weight:800;font-size:2.1rem;
+          line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+  .stat span{font-size:.9rem;color:var(--muted)}
 
-  /* ---- registre ---- */
-  h2{
-    font-family:var(--sans);font-weight:600;font-size:1.05rem;
-    margin:3.5rem 0 1rem;padding-bottom:.5rem;border-bottom:1px solid var(--ink);
-  }
-  .row{
-    display:grid;grid-template-columns:1fr auto;gap:.2rem 1.5rem;
-    padding:.9rem 0;border-bottom:1px solid var(--rule);align-items:baseline;
-  }
-  .row .name{font-family:var(--sans);font-weight:600;font-size:1.02rem}
-  .row .meta{grid-column:1;font-size:.9rem;color:var(--quiet)}
-  .row .pts{
-    grid-row:1/3;grid-column:2;font-family:var(--sans);font-weight:800;
-    font-variant-numeric:tabular-nums;font-size:1.3rem;color:var(--signal);
-  }
-  .bar{grid-column:1/-1;height:3px;background:var(--signal);margin-top:.5rem;min-width:2px}
+  h2{font-family:var(--display);font-weight:600;font-size:1.05rem;margin:3.5rem 0 .75rem;
+     padding-bottom:.5rem;border-bottom:2px solid var(--ink)}
+  .row{display:grid;grid-template-columns:1fr auto;gap:.15rem 1.5rem;padding:.95rem 0;
+       border-bottom:1px solid var(--rule);align-items:baseline}
+  .row .name{font-family:var(--display);font-weight:600;font-size:1.02rem}
+  .row .meta{grid-column:1;font-size:.88rem;color:var(--muted)}
+  .row .pts{grid-row:1/3;grid-column:2;font-family:var(--display);font-weight:800;
+            font-variant-numeric:tabular-nums;font-size:1.3rem;color:var(--accent)}
+  .bar{grid-column:1/-1;height:4px;background:var(--accent);margin-top:.55rem;min-width:3px}
 
-  .note{font-size:.95rem;color:var(--quiet)}
-  .note a{color:var(--signal)}
+  ol{max-width:38em;padding-left:1.2rem}
+  ol li{margin-bottom:.45rem}
+  .note{font-size:.93rem;color:var(--muted)}
   footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--rule)}
-  .err{color:var(--signal);font-family:var(--sans);font-weight:600}
+  .err{color:var(--accent);font-family:var(--display);font-weight:600}
   [hidden]{display:none !important}
-  ol{max-width:36em}
-  ol li{margin-bottom:.5rem}
 
-  @media (prefers-reduced-motion:reduce){.needle{transition:none}}
+  @media (prefers-reduced-motion:reduce){.needle,.fill{transition:none}}
   @media (max-width:640px){
-    body{font-size:17px}
+    body{font-size:16px}
+    .meter-track{height:72px}
     .readout{position:static;transform:none;padding:1rem 0 0}
-    .meter-track{height:64px}
+    .stats{gap:1.75rem}
   }
 </style>
 </head>
@@ -148,14 +135,18 @@
 
 <div class="meter" id="meter">
   <div class="meter-track" id="track">
+    <div class="fill" id="fill"></div>
     <div class="needle rest" id="needle" style="left:0%"></div>
     <button class="drop" id="drop" type="button">
-      Dépose ton fichier ici, ou clique pour le choisir
-      <span>CSV Exportify ou YourLibrary.json</span>
+      Dépose ton fichier ici
+      <span>ou clique pour le choisir — CSV Exportify ou YourLibrary.json</span>
     </button>
     <div class="readout" id="readout" hidden><span id="scoreNum">0</span><small>/ 100</small></div>
   </div>
   <div class="scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+  <p class="getfile" id="getfile">Pas encore de fichier&nbsp;? Récupère-le en deux minutes sur
+    <a href="https://exportify.net" target="_blank" rel="noopener">exportify.net</a> —
+    connecte ton compte, puis exporte la ligne «&nbsp;Liked Songs&nbsp;».</p>
   <p class="verdict" id="verdict" hidden></p>
   <p class="err" id="err" hidden></p>
 </div>
@@ -163,7 +154,7 @@
 
 <div class="calib" id="calib" hidden>
   <label for="ceiling">Sévérité de l'échelle</label>
-  <input type="range" id="ceiling" min="0.1" max="2" step="0.05" value="0.5">
+  <input type="range" id="ceiling" min="0.05" max="1.5" step="0.05" value="0.5">
   <p id="calibText"></p>
 </div>
 
@@ -177,27 +168,37 @@
   <h2>Le détail, artiste par artiste</h2>
   <div id="rows"></div>
   <p class="note" id="rowsNote"></p>
+
+  <div id="memory" hidden>
+    <h2>Pour mémoire</h2>
+    <p class="note">Ces artistes sont dans la base, mais la justice a tranché en leur
+    faveur : la mise en cause est annulée, leurs titres comptent comme les autres et
+    n'entrent ni dans le score ni dans les pourcentages.</p>
+    <p class="note" id="memoryList"></p>
+  </div>
 </div>
 
 <div id="howto">
-  <h2>Comment récupérer ton fichier</h2>
+  <h2>Si Exportify ne répond pas</h2>
   <ol>
-    <li>Va sur <a href="https://exportify.net" target="_blank" rel="noopener">exportify.net</a>
-    et connecte-toi avec ton compte Spotify.</li>
-    <li>Tout en haut de la liste, trouve la ligne <em>Liked Songs</em> et clique sur Export.</li>
-    <li>Reviens ici et dépose le CSV.</li>
+    <li>Dans ton compte Spotify, ouvre Sécurité et confidentialité, puis Paramètres de confidentialité.</li>
+    <li>Coche «&nbsp;Données du compte&nbsp;» et demande tes données. Tu reçois un lien sous cinq jours environ.</li>
+    <li>Dans le zip, dépose ici le fichier <em>YourLibrary.json</em>.</li>
   </ol>
-  <p class="note">Si Exportify ne répond pas, tu peux demander l'export officiel de tes
-  données dans les paramètres de confidentialité de ton compte Spotify, et déposer
-  le fichier <em>YourLibrary.json</em> du zip. C'est plus long — compte cinq jours —
-  mais ça ne dépend de personne.</p>
+  <p class="note">C'est plus long, mais ça ne dépend d'aucun service tiers — et ce fichier
+  contient en prime les artistes que tu as marqués «&nbsp;ne plus jouer&nbsp;», qui te
+  rendent des points.</p>
 </div>
 
 <footer>
-  <p class="note">Le score dépend de pondérations choisies à la main, et d'une base
-  d'artistes forcément incomplète. Un score bas peut simplement vouloir dire que tes
-  artistes n'y figurent pas. La méthode est détaillée dans
-  <a href="SCORING.md">SCORING.md</a>, et elle est faite pour être contestée.</p>
+  <p class="note">Deux situations judiciaires à ne pas confondre, et que ce score
+  traite différemment : une relaxe prononcée par un tribunal, comme une absence de
+  mise en accusation, annule la mise en cause — les titres redeviennent des titres
+  comme les autres. Un classement sans suite, lui, signifie seulement que les preuves
+  ont manqué : l'affaire n'a pas été tranchée, et compte donc comme une accusation.
+  Les polémiques portant sur des paroles de chansons sont hors périmètre. La méthode
+  complète est dans <a href="SCORING.md">SCORING.md</a>, et elle est faite pour être
+  contestée.</p>
 </footer>
 
 </div>
@@ -213,11 +214,14 @@
 
   var STATUS = {
     convicted:"condamné",
+    admitted:"faits reconnus par l\u2019artiste",
     charged:"poursuivi ou mis en examen",
     accused_multiple:"accusations multiples",
     accused_single:"accusation isolée",
-    controversy:"propos ou comportements",
-    cleared:"classé ou relaxé"
+    dismissed:"classé sans suite, affaire non tranchée",
+    no_bill:"pas de mise en accusation",
+    acquitted:"relaxé par un tribunal",
+    controversy:"propos tenus en son nom propre"
   };
 
   var $ = function(id){ return document.getElementById(id); };
@@ -227,9 +231,10 @@
     return (s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
       .toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
   }
+  // Exportify separe par des POINTS-VIRGULES. Ne jamais couper sur "," ni "&" :
+  // cela detruirait "Tyler, The Creator", "Earth, Wind & Fire", "Polo & Pan".
   function splitArtists(field){
-    return (field||"").split(/\s*,\s*|\s+feat\.?\s+|\s+&\s+/i)
-      .map(function(s){return s.trim();}).filter(Boolean);
+    return (field||"").split(";").map(function(s){return s.trim();}).filter(Boolean);
   }
   function parseDate(v){
     if(!v) return null;
@@ -284,7 +289,7 @@
       if(!cells[ia]) continue;
       var added = id === -1 ? null : parseDate(cells[id]);
       var title = it === -1 ? "" : (cells[it]||"");
-      splitArtists(cells[ia]).forEach(function(a){ tracks.push({artist:a,title:title,added:added}); });
+      splitArtists(cells[ia]).forEach(function(a){ tracks.push({artist:a,title:title,added:added,tid:r}); });
     }
     return {tracks:tracks, banned:[]};
   }
@@ -294,7 +299,7 @@
     var list = data.tracks || [];
     if(!list.length) throw new Error("Aucun titre sauvegardé trouvé dans ce JSON.");
     var tracks = list.filter(function(t){ return t.artist; })
-      .map(function(t){ return {artist:String(t.artist).trim(), title:t.track||"", added:null}; });
+      .map(function(t,i){ return {artist:String(t.artist).trim(), title:t.track||"", added:null, tid:i}; });
     var banned = (data.bannedArtists||[]).map(function(b){ return b.name; }).filter(Boolean);
     return {tracks:tracks, banned:banned};
   }
@@ -310,8 +315,10 @@
   }
 
   function compute(lib){
-    var total = lib.tracks.length;
-    var artistSet = {}, per = {};
+    var ids = {};
+    lib.tracks.forEach(function(t){ ids[t.tid] = 1; });
+    var total = Object.keys(ids).length;
+    var artistSet = {}, per = {}, flaggedIds = {};
 
     lib.tracks.forEach(function(t){
       var key = normalize(t.artist);
@@ -320,18 +327,25 @@
       if(!e) return;
       var b = per[e.name] || (per[e.name] = {entry:e, n:0, nPost:0, nDated:0});
       b.n++;
+      if(Number(e.gravity||0) > 0) flaggedIds[t.tid] = 1;
       var since = parseSince(e.public_since);
       if(t.added && since){ b.nDated++; if(t.added >= since) b.nPost++; }
     });
 
-    var S = 0, flagged = 0, rows = [];
+    var S = 0, rows = [], neutral = [];
     Object.keys(per).forEach(function(name){
       var b = per[name], e = b.entry;
       var gravity = Number(e.gravity||0);
+      if(gravity === 0){
+        // Relaxe ou absence de mise en accusation : la mise en cause est annulee.
+        neutral.push({name:name, entry:e, n:b.n});
+        return;
+      }
       var share = b.n/total;
-      var km = b.nDated ? 1 + KNOWLEDGE_WEIGHT*(b.nPost/b.nDated) : 1;
+      // La connaissance de cause n'aggrave que ce qui est a charge.
+      var km = (b.nDated && gravity > 0) ? 1 + KNOWLEDGE_WEIGHT*(b.nPost/b.nDated) : 1;
       var contribution = (gravity/5)*share*km;
-      S += contribution; flagged += b.n;
+      S += contribution;
       rows.push({name:name, entry:e, n:b.n, nPost:b.nPost, nDated:b.nDated,
                  km:km, share:share, contribution:contribution});
     });
@@ -339,8 +353,10 @@
 
     var matched = lib.banned.filter(function(n){ return db[normalize(n)]; });
     var malus = Math.min(BANNED_CAP, BANNED_BONUS*matched.length);
+    var flagged = Object.keys(flaggedIds).length;
 
-    return {rows:rows, S:S, malus:malus, matched:matched, total:total,
+    neutral.sort(function(a,b){ return b.n - a.n; });
+    return {rows:rows, neutral:neutral, S:S, malus:malus, matched:matched, total:total,
             artists:Object.keys(artistSet).length, flagged:flagged};
   }
 
@@ -363,6 +379,7 @@
     $("scoreNum").textContent = s.toFixed(0);
     $("needle").classList.remove("rest");
     $("needle").style.left = Math.min(100, s) + "%";
+    $("fill").style.width = Math.min(100, s) + "%";
     $("verdict").hidden = false;
     $("verdict").textContent = verdictOf(s);
 
@@ -372,7 +389,8 @@
     $("results").hidden = false;
     $("calib").hidden = false;
     $("howto").hidden = true;
-    $("drop").textContent = "Déposer un autre fichier";
+    $("getfile").hidden = true;
+    $("drop").firstChild.nodeValue = "Déposer un autre fichier";
 
     var box = $("rows");
     box.textContent = "";
@@ -383,7 +401,11 @@
         + "C'est peut-être une bonne nouvelle, c'est peut-être que la base est trop courte.";
       box.appendChild(p);
     }
-    var maxPts = res.rows.length ? 100*res.rows[0].contribution/ceiling : 1;
+    var maxPts = 1;
+    res.rows.forEach(function(r){
+      maxPts = Math.max(maxPts, 100*r.contribution/ceiling);
+    });
+
     res.rows.forEach(function(r){
       var pts = 100*r.contribution/ceiling;
       var el = document.createElement("div");
@@ -400,21 +422,31 @@
       meta.textContent = bits.join(" · ");
 
       var p = document.createElement("div");
-      p.className = "pts"; p.textContent = pts.toFixed(1);
+      p.className = "pts";
+      p.textContent = pts.toFixed(1);
 
       var bar = document.createElement("div");
       bar.className = "bar";
-      bar.style.width = Math.max(2, 100*pts/maxPts) + "%";
+      bar.style.width = Math.max(3, 100*pts/maxPts) + "%";
 
       el.appendChild(n); el.appendChild(p); el.appendChild(meta); el.appendChild(bar);
       box.appendChild(el);
     });
 
     var note = [];
-    if(res.matched.length) note.push("Artistes bannis retrouvés dans la base : "
-      + res.matched.join(", ") + " (−" + res.malus.toFixed(0) + " points).");
+    if(res.matched.length) note.push("Artistes que tu as bannis et qui figurent dans la base : "
+      + res.matched.join(", ") + " (\u2212" + res.malus.toFixed(0) + " points).");
     note.push("Les points de chaque ligne s'additionnent pour former le score.");
     $("rowsNote").textContent = note.join(" ");
+
+    var mem = $("memory");
+    if(res.neutral.length){
+      mem.hidden = false;
+      $("memoryList").textContent = res.neutral.map(function(r){
+        return r.name + " (" + (STATUS[r.entry.status] || r.entry.status) + ", "
+             + r.n + (r.n > 1 ? " titres" : " titre") + ")";
+      }).join(" · ");
+    } else { mem.hidden = true; }
 
     updateCalibText();
   }
@@ -475,7 +507,7 @@
     .then(function(j){
       db = index(j);
       if(!Object.keys(db).length){
-        fail("La base d'artistes est encore vide : le score sera nul quoi que tu déposes.");
+        fail("La base d'artistes est vide : le score sera nul quoi que tu déposes.");
       }
     })
     .catch(function(){

@@ -2,31 +2,114 @@
   "version": 1,
   "_schema": {
     "name": "Nom principal tel qu'il apparait sur Spotify",
-    "aliases": "Autres graphies, nom civil, nom de groupe (liste)",
-    "status": "convicted | charged | accused_multiple | accused_single | controversy | cleared",
-    "gravity": "0 a 5, la ponderation choisie pour ce statut (voir SCORING.md)",
-    "categories": "Nature des faits (liste libre)",
-    "public_since": "AAAA-MM du moment ou l'affaire devient publique",
+    "aliases": "Autres graphies, nom civil, nom de groupe",
+    "status": "convicted | admitted | charged | accused_multiple | accused_single | dismissed | no_bill | acquitted | controversy",
+    "gravity": "0 a 5. Une entree a 0 est neutre : elle est connue de la base mais ne compte pas, ses titres sont des titres comme les autres.",
+    "categories": "Nature des faits",
+    "public_since": "AAAA-MM ou l'affaire devient publique. Laisser vide si la date n'est pas etablie : le multiplicateur de connaissance de cause est alors neutralise.",
     "summary": "Une phrase factuelle, au statut judiciaire exact",
-    "sources": "URLs verifiables (presse etablie, decisions de justice)"
+    "sources": "URLs verifiables"
   },
   "_regles": [
     "Uniquement des faits publics et documentes, jamais de rumeur.",
-    "Le champ status decrit la realite judiciaire, gravity est notre ponderation.",
-    "Ne jamais ecrire 'condamne' pour une personne seulement accusee.",
-    "public_since conditionne tout le calcul de connaissance de cause : le renseigner avec soin.",
+    "status decrit la realite judiciaire, gravity est notre ponderation.",
+    "Trois crans a ne jamais confondre : RELAXE (un tribunal a juge et declare non coupable) et PAS DE MISE EN ACCUSATION (l'enquete conclut a l'absence d'infraction) = gravite 0, neutre, la mise en cause est annulee et rien n'est compte ; CLASSE SANS SUITE (preuves insuffisantes) = l'affaire n'est pas tranchee, la gravite reste celle des accusations.",
+    "Hors perimetre : les polemiques portant sur des paroles de chansons, ou l'artiste met en scene un personnage. Le score suit des actes, pas des textes.",
+    "Si la date de revelation publique est incertaine, laisser public_since vide plutot que de deviner.",
     "Une entree sans source ne doit pas etre fusionnee."
   ],
   "artists": [
     {
-      "name": "EXEMPLE — supprimer cette entree",
+      "name": "Roméo Elvis",
       "aliases": [],
-      "status": "accused_multiple",
+      "status": "admitted",
+      "gravity": 4,
+      "categories": [
+        "agression sexuelle"
+      ],
+      "public_since": "2020-09",
+      "summary": "Accuse d'agression sexuelle en septembre 2020 par une jeune femme (faits survenus dans une cabine d'essayage a Bruxelles). Il a publiquement reconnu les faits et presente des excuses. Aucune procedure penale connue n'en a decoule.",
+      "sources": [
+        "https://www.rtbf.be/article/affaire-romeo-elvis-quelle-suite-judiciaire-10581936",
+        "https://fr.wikipedia.org/wiki/Rom%C3%A9o_Elvis"
+      ]
+    },
+    {
+      "name": "Lomepal",
+      "aliases": [],
+      "status": "dismissed",
       "gravity": 3,
-      "categories": ["exemple"],
-      "public_since": "2019-10",
-      "summary": "Entree modele. Le script ignore toute entree dont le nom commence par EXEMPLE.",
-      "sources": ["https://exemple.invalid/article"]
+      "categories": [
+        "viol (accusations)"
+      ],
+      "public_since": "",
+      "summary": "Trois femmes ont porte plainte pour viol entre 2020 et 2024. Le parquet de Paris a classe l'enquete, estimant les faits non clairement etablis et les preuves insuffisantes. Un classement sans suite n'est PAS une relaxe : aucune juridiction n'a juge l'affaire, et les plaignantes envisagent de deposer de nouvelles plaintes. Il se declare innocent. Traite ici comme une affaire non tranchee.",
+      "sources": [
+        "https://www.brut.media/fr/articles/france/justice-faits-divers/le-parquet-de-paris-classe-lenquete-pour-viols-visant-le-rappeur-lomepal"
+      ]
+    },
+    {
+      "name": "XXXTENTACION",
+      "aliases": [
+        "XXXTentacion"
+      ],
+      "status": "charged",
+      "gravity": 4,
+      "categories": [
+        "violences conjugales",
+        "sequestration"
+      ],
+      "public_since": "2016-10",
+      "summary": "Arrete en octobre 2016 et poursuivi pour coups aggraves sur femme enceinte, strangulation, sequestration et subornation de temoin. Il a plaide non coupable et est mort en juin 2018 avant son proces : jamais juge. Un enregistrement obtenu par Pitchfork le montre semblant reconnaitre les faits.",
+      "sources": [
+        "https://www.okayplayer.com/music/xxxtentacion-secret-recording-domestic-abuse-violent-crimes-death.html",
+        "https://stereogum.com/1961564/xxxtentacions-alleged-domestic-abuse-detailed-in-graphic-testimony/news"
+      ]
+    },
+    {
+      "name": "Kanye West",
+      "aliases": [
+        "Ye"
+      ],
+      "status": "controversy",
+      "gravity": 3,
+      "categories": [
+        "antisemitisme"
+      ],
+      "public_since": "2022-10",
+      "summary": "Propos antisemites repetes en 2022, dont un message annoncant passer en 'death con 3' sur les juifs, puis une image melant croix gammee et etoile de David. Adidas a rompu son partenariat en octobre 2022 en qualifiant ces propos d'inacceptables et dangereux. Aucune procedure penale.",
+      "sources": [
+        "https://thefader.com/2022/10/25/adidas-ends-business-relationship-with-kanye-west",
+        "https://fortune.com/2023/09/21/adidas-ceo-says-kanye-west-didnt-mean-antisemitic-remarks"
+      ]
+    },
+    {
+      "name": "Travis Scott",
+      "aliases": [],
+      "status": "no_bill",
+      "gravity": 0,
+      "categories": [
+        "securite du public"
+      ],
+      "public_since": "2021-11",
+      "summary": "Dix morts lors du festival Astroworld en novembre 2021. En juin 2023, un grand jury du comte de Harris a refuse de le mettre en accusation, le procureur indiquant qu'aucune infraction n'avait ete commise et qu'aucun individu n'etait penalement responsable. Des procedures civiles restent en cours. Gravite nulle : garde en memoire, sans effet sur le score. A supprimer si le perimetre du projet exclut les faits non genres.",
+      "sources": [
+        "https://www.hollywoodreporter.com/news/music-news/travis-scott-no-criminal-charges-astroworld-tragedy-1235526518/"
+      ]
+    },
+    {
+      "name": "Orelsan",
+      "aliases": [],
+      "status": "acquitted",
+      "gravity": 0,
+      "categories": [
+        "relaxe (poursuites sur des paroles)"
+      ],
+      "public_since": "2009-09",
+      "summary": "Poursuivi par cinq associations feministes pour provocation a la violence envers les femmes. Condamne a 1 000 euros avec sursis en premiere instance en 2013, il a ete RELAXE en appel par la cour de Versailles le 18 fevrier 2016, celle-ci retenant qu'il mettait en scene des personnages. La justice ayant tranche en sa faveur, cette entree est neutre : ses titres comptent comme les autres.",
+      "sources": [
+        "https://www.franceinfo.fr/faits-divers/justice-proces/le-rappeur-orelsan-juge-pour-provocation-a-la-violence-contre-les-femmes-dans-plusieurs-chansons-relaxe-en-appel_1320549.html"
+      ]
     }
   ]
 }
