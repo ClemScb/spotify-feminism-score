@@ -1,17 +1,18 @@
-name: Verifier la base
+name: 0 · Verifier la base
 
 on:
   push:
     paths: ["artists.json"]
   pull_request:
     paths: ["artists.json", "review/candidates.json"]
+  workflow_dispatch:
 
 jobs:
   verifier:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Controler la coherence de artists.json
