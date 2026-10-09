@@ -137,6 +137,11 @@
   ol{max-width:38em;padding-left:1.2rem}
   ol li{margin-bottom:.45rem}
   .note{font-size:.93rem;color:var(--muted)}
+  .copy{font-family:var(--display);font-weight:600;font-size:.92rem;
+        background:var(--ink);color:var(--paper);border:0;border-radius:2px;
+        padding:.6rem 1.1rem;cursor:pointer}
+  .copy:hover{background:var(--accent)}
+  .copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--rule)}
   .err{color:var(--accent);font-family:var(--display);font-weight:600}
   [hidden]{display:none !important}
@@ -206,6 +211,21 @@
   <h2>Le détail, artiste par artiste</h2>
   <div id="rows"></div>
   <p class="note" id="rowsNote"></p>
+
+  <div id="gaps" hidden>
+    <h2>Ce que la base ignore</h2>
+    <p class="note">Ces artistes occupent une vraie place dans ta bibliothèque et
+    n'ont aucune entrée dans la base. Ça ne veut pas dire qu'ils sont irréprochables :
+    ça veut dire que personne ne les a encore documentés. Le score ne peut mesurer
+    que ce qu'il connaît.</p>
+    <p class="note" id="gapsList"></p>
+    <p><button class="copy" id="copyGaps" type="button">Copier les 30 premiers noms</button></p>
+    <p class="note">Colle cette liste dans le workflow «&nbsp;1 · Chercher des
+    artistes&nbsp;» de
+    <a href="https://github.com/ClemScb/spotify-feminism-score/actions" target="_blank" rel="noopener">l'onglet Actions du dépôt</a>.
+    Seuls des noms d'artistes partent&nbsp;; ton fichier, lui, ne quitte pas ce
+    navigateur.</p>
+  </div>
 
   <div id="memory" hidden>
     <h2>Pour mémoire</h2>
@@ -364,11 +384,16 @@
     var total = Object.keys(ids).length;
     var artistSet = {}, per = {}, flaggedIds = {};
 
+    var unknown = {};
     lib.tracks.forEach(function(t){
       var key = normalize(t.artist);
       artistSet[key] = 1;
       var e = db[key];
-      if(!e) return;
+      if(!e){
+        var u = unknown[key] || (unknown[key] = {name:t.artist, n:0});
+        u.n++;
+        return;
+      }
       var b = per[e.name] || (per[e.name] = {entry:e, n:0, nPost:0, nDated:0});
       b.n++;
       if(Number(e.gravity||0) > 0) flaggedIds[t.tid] = 1;
@@ -400,7 +425,9 @@
     var flagged = Object.keys(flaggedIds).length;
 
     neutral.sort(function(a,b){ return b.n - a.n; });
-    return {rows:rows, neutral:neutral, S:S, malus:malus, matched:matched, total:total,
+    var missing = Object.keys(unknown).map(function(k){ return unknown[k]; })
+      .sort(function(a,b){ return b.n - a.n; });
+    return {rows:rows, neutral:neutral, missing:missing, S:S, malus:malus, matched:matched, total:total,
             artists:Object.keys(artistSet).length, flagged:flagged};
   }
 
@@ -493,6 +520,16 @@
       + res.matched.join(", ") + " (\u2212" + res.malus.toFixed(0) + " points).");
     note.push("Les points de chaque ligne s'additionnent pour former le score.");
     $("rowsNote").textContent = note.join(" ");
+
+    var gaps = $("gaps");
+    var top30 = res.missing.slice(0, 30);
+    if(top30.length){
+      gaps.hidden = false;
+      $("gapsList").textContent = top30.map(function(m){
+        return m.name + " (" + m.n + ")";
+      }).join(" · ");
+      $("copyGaps").dataset.names = top30.map(function(m){ return m.name; }).join(", ");
+    } else { gaps.hidden = true; }
 
     var mem = $("memory");
     if(res.neutral.length){
@@ -606,6 +643,26 @@
   });
   meter.addEventListener("drop", function(e){
     if(e.dataTransfer.files[0]) handle(e.dataTransfer.files[0]);
+  });
+
+  $("copyGaps").addEventListener("click", function(e){
+    var btn = e.currentTarget;
+    var text = btn.dataset.names || "";
+    var done = function(){
+      btn.textContent = "Copié";
+      setTimeout(function(){ btn.textContent = "Copier les 30 premiers noms"; }, 2000);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else { fallback(); }
+    function fallback(){
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); done(); }
+      catch(err){ btn.textContent = "Copie impossible"; }
+      document.body.removeChild(ta);
+    }
   });
 
   $("ceiling").addEventListener("input", function(e){

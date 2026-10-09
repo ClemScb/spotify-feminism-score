@@ -98,23 +98,36 @@ def library_artists(path):
 
 
 def cmd_find(args):
-    path = Path(args.input)
-    if not path.exists():
-        sys.exit("Fichier introuvable : %s" % path)
-
-    counts = library_artists(path)
     db = load_artists_db(args.artists)
-    unknown = [(a, n) for a, n in counts.most_common()
-               if n >= args.min_tracks and normalize(a) not in db]
 
-    print("%d artistes dans la bibliotheque, %d absents de la base avec >= %d titres.\n"
-          % (len(counts), len(unknown), args.min_tracks))
+    if args.names:
+        # Mode liste : aucune bibliotheque n'est lue, donc aucune donnee
+        # personnelle ne circule. C'est le mode utilise par GitHub Actions.
+        counts = Counter()
+        for raw in args.names.split(","):
+            name = raw.strip()
+            if name:
+                counts[name] = 0
+    else:
+        path = Path(args.input)
+        if not path.exists():
+            sys.exit("Fichier introuvable : %s" % path)
+        counts = library_artists(path)
+    floor = 0 if args.names else args.min_tracks
+    unknown = [(a, n) for a, n in counts.most_common()
+               if n >= floor and normalize(a) not in db]
+
+    if args.names:
+        print("%d noms soumis, %d absents de la base.\n" % (len(counts), len(unknown)))
+    else:
+        print("%d artistes dans la bibliotheque, %d absents de la base avec >= %d titres.\n"
+              % (len(counts), len(unknown), args.min_tracks))
     if not unknown:
         print("Rien a enrichir.")
         return
 
     for a, n in unknown[:args.limit]:
-        print("  %4d  %s" % (n, a))
+        print("  %4s  %s" % (n if n else "-", a))
     print()
 
     names = [a for a, _ in unknown[:args.limit]]
@@ -222,6 +235,7 @@ def cmd_apply(args):
 def main():
     ap = argparse.ArgumentParser(description="Enrichissement de la base depuis Wikidata")
     ap.add_argument("input", nargs="?", help="CSV Exportify ou YourLibrary.json")
+    ap.add_argument("--names", help="liste de noms separes par des virgules, au lieu d'un fichier")
     ap.add_argument("--artists", default="artists.json")
     ap.add_argument("--out", default="data/candidates.json")
     ap.add_argument("--min-tracks", type=int, default=5,
@@ -233,10 +247,10 @@ def main():
 
     if args.apply:
         cmd_apply(args)
-    elif args.input:
+    elif args.names or args.input:
         cmd_find(args)
     else:
-        ap.error("donne un fichier de bibliotheque, ou --apply data/candidates.json")
+        ap.error("donne un fichier de bibliotheque, --names \"A,B,C\", ou --apply")
 
 
 if __name__ == "__main__":

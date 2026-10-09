@@ -55,7 +55,32 @@ Options utiles :
 --ceiling 0.5              # sensibilité du score (voir SCORING.md)
 ```
 
-## Enrichir la base
+## Enrichir la base, depuis GitHub
+
+Trois workflows, dans l'onglet **Actions** du dépôt. Rien à installer, rien à
+lancer sur ta machine.
+
+**1 · Chercher des artistes** — bouton « Run workflow », tu colles une liste de
+noms séparés par des virgules. Le job interroge Wikidata et ouvre une pull request
+contenant `review/candidates.json`. Aucune bibliothèque n'est lue : seuls des noms
+d'artistes circulent, donc aucune donnée personnelle ne passe par GitHub.
+
+**Relecture** — dans la PR, onglet Files changed, tu édites le fichier directement
+dans le navigateur : statut réel à la place de `A_VERIFIER`, gravité, date de
+révélation, résumé factuel, source de presse. Tu supprimes les homonymes.
+
+**2 · Fusionner dans la base** — un second bouton applique les brouillons relus à
+`artists.json` et ouvre une PR. Tout ce qui est resté incomplet est écarté, et le
+journal du job dit lesquels et pourquoi.
+
+**Vérifier la base** tourne tout seul à chaque modification d'`artists.json` :
+statuts valides, gravité dans les clous, relaxe forcément à 0, au moins une source
+hors Wikidata, pas de doublon, et une alerte si un résumé écrit « condamné » alors
+que le statut dit autre chose.
+
+Une fois la seconde PR fusionnée, le site se met à jour tout seul.
+
+## Enrichir la base, en local
 
 `scripts/enrich.py` repère les artistes de ta bibliothèque absents d'`artists.json`,
 interroge Wikidata (propriété P1399, « condamné pour ») et dépose des brouillons.
