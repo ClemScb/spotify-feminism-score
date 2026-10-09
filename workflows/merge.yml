@@ -1,0 +1,39 @@
+name: 2 · Fusionner dans la base
+
+# A lancer une fois review/candidates.json relu et complete a la main.
+# La fusion refuse toute entree non verifiee : voir scripts/enrich.py.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  fusionner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fusionner les brouillons verifies
+        run: python3 scripts/enrich.py --apply review/candidates.json
+
+      - name: Ouvrir une pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: enrich/fusion
+          commit-message: "Nouvelles entrees dans artists.json"
+          title: "Nouvelles entrees verifiees"
+          add-paths: artists.json
+          body: |
+            Entrees fusionnees dans `artists.json` apres relecture.
+
+            Les candidats incomplets ont ete ecartes : le journal du job
+            dit lesquels et pourquoi.
+
+            Une fois cette PR fusionnee, le site se met a jour tout seul.

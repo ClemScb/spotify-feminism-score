@@ -1,0 +1,58 @@
+name: 1 · Chercher des artistes
+
+# Declenchement manuel : onglet Actions -> "1 · Chercher des artistes" -> Run workflow.
+# Aucune bibliotheque n'est lue : on soumet une liste de noms, donc aucune donnee
+# personnelle ne transite par GitHub.
+
+on:
+  workflow_dispatch:
+    inputs:
+      noms:
+        description: "Noms d'artistes separes par des virgules"
+        required: true
+        default: "Damso, Alpha Wann, PLK, SCH"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  chercher:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Interroger Wikidata
+        run: |
+          python3 scripts/enrich.py \
+            --names "${{ inputs.noms }}" \
+            --out review/candidates.json
+
+      - name: Ouvrir une pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: enrich/candidats
+          commit-message: "Brouillons a verifier depuis Wikidata"
+          title: "Brouillons a verifier"
+          add-paths: review/candidates.json
+          body: |
+            Brouillons produits automatiquement depuis Wikidata.
+
+            **Rien n'entrera dans la base tant que ce fichier n'aura pas ete relu.**
+
+            Pour chaque candidat pertinent, editer `review/candidates.json`
+            directement ici (onglet Files changed, icone crayon) :
+
+            - remplacer `"status": "A_VERIFIER"` par le statut reel
+              (`convicted`, `charged`, `dismissed`, `acquitted`, ...) ;
+            - renseigner `gravity` (0 a 5) et `public_since` (AAAA-MM) ;
+            - ecrire un `summary` factuel, au statut judiciaire exact ;
+            - ajouter au moins une source de presse en plus de Wikidata.
+
+            Supprimer les homonymes et les cas hors sujet.
+
+            Ensuite : Actions -> "2 · Fusionner dans la base".
