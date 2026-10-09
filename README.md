@@ -55,6 +55,29 @@ Options utiles :
 --ceiling 0.5              # sensibilité du score (voir SCORING.md)
 ```
 
+## Enrichir la base
+
+`scripts/enrich.py` repère les artistes de ta bibliothèque absents d'`artists.json`,
+interroge Wikidata (propriété P1399, « condamné pour ») et dépose des brouillons.
+
+```bash
+python3 scripts/enrich.py data/Liked_Songs.csv --min-tracks 10
+```
+
+Il n'écrit jamais dans `artists.json` directement. Chaque brouillon sort avec le
+statut `A_VERIFIER`, et la fusion refuse toute entrée dont le statut n'a pas été
+corrigé à la main, dont la gravité est vide, ou dont les sources se limitent à
+Wikidata. Wikidata dit « condamné pour X » sans dire si un appel a infirmé, ni
+quand l'affaire est devenue publique : c'est ce que la relecture humaine apporte.
+
+```bash
+# après avoir édité data/candidates.json
+python3 scripts/enrich.py --apply data/candidates.json
+python3 scripts/score.py data/Liked_Songs.csv
+```
+
+`--dry-run` affiche la liste des manquants et la requête SPARQL sans toucher au réseau.
+
 ## Étape 3 — La version partageable
 
 `index.html` à la racine est le site. Il ne fait aucun appel à Spotify : il lit le
