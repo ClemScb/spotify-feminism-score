@@ -1,5 +1,7 @@
 # spotify-feminism-score
 
+[![Vérification de la base](https://github.com/ClemScb/spotify-feminism-score/actions/workflows/validate.yml/badge.svg)](https://github.com/ClemScb/spotify-feminism-score/actions/workflows/validate.yml)
+
 Un outil qui lit ta bibliothèque Spotify et te renvoie un score de « je ne sépare pas
 l'homme de l'artiste » : plus tu es proche de 100, plus ton écoute cautionne des
 artistes mis en cause.
@@ -82,10 +84,16 @@ peut survenir après coup.
 `artists.json` et ouvre une PR. Tout ce qui est resté incomplet est écarté, et le
 journal du job dit lesquels et pourquoi.
 
-**Vérifier la base** tourne tout seul à chaque modification d'`artists.json` :
+Chaque exécution affiche un **résumé lisible sur la page du run** — tableau des
+candidats trouvés, chefs déclarés par Wikidata, noms sans résultat, entrées
+fusionnées et motifs d'écartement. Pas besoin de déplier les logs.
+
+**0 · Vérifier la base** tourne tout seul à chaque modification d'`artists.json` :
 statuts valides, gravité dans les clous, relaxe forcément à 0, au moins une source
 hors Wikidata, pas de doublon, et une alerte si un résumé écrit « condamné » alors
-que le statut dit autre chose.
+que le statut dit autre chose. Son résumé donne la répartition par statut et la
+liste complète de la base. L'écusson en haut de ce README reflète son dernier
+résultat.
 
 Une fois la seconde PR fusionnée, le site se met à jour tout seul.
 

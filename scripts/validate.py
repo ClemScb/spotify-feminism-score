@@ -7,6 +7,7 @@ a chaque modification de la base, et utilisable en local :
 """
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -17,6 +18,15 @@ VALID_STATUS = {
 }
 NEUTRAL = {"acquitted"}
 DATE = re.compile(r"^(\d{4}(-\d{2})?)?$")
+
+
+def write_summary(lines):
+    """Ecrit un resume lisible sur la page du run GitHub Actions."""
+    path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not path:
+        return
+    with open(path, "a", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
 
 
 def main():
@@ -71,13 +81,43 @@ def main():
             errors.append("%s : doublon" % tag)
         seen[key] = True
 
-    total = len([a for a in data.get("artists", []) if not str(a.get("name", "")).startswith("EXEMPLE")])
+    artists = [a for a in data.get("artists", []) if not str(a.get("name", "")).startswith("EXEMPLE")]
+    total = len(artists)
     print("%d entrees controlees." % total)
 
     for w in warnings:
         print("  avertissement : %s" % w)
     for e in errors:
         print("  ERREUR : %s" % e)
+
+    # Resume affiche directement sur la page du run.
+    lines = ["## Verification de la base", ""]
+    if errors:
+        lines.append("**%d erreur(s)** — la base n'est pas valide." % len(errors))
+    else:
+        lines.append("**Base valide** — %d entrees controlees." % total)
+    lines.append("")
+    if errors:
+        lines.append("### Erreurs")
+        lines += ["- " + e for e in errors] + [""]
+    if warnings:
+        lines.append("### Avertissements")
+        lines += ["- " + w for w in warnings] + [""]
+
+    by_status = {}
+    for a in artists:
+        by_status[a.get("status", "?")] = by_status.get(a.get("status", "?"), 0) + 1
+    lines += ["### Repartition par statut", "", "| Statut | Entrees |", "|---|---|"]
+    for st, n in sorted(by_status.items(), key=lambda kv: -kv[1]):
+        lines.append("| `%s` | %d |" % (st, n))
+    lines.append("")
+    lines.append("| Artiste | Statut | Gravite | Public depuis |")
+    lines.append("|---|---|---|---|")
+    for a in sorted(artists, key=lambda x: str(x.get("name", "")).lower()):
+        lines.append("| %s | `%s` | %s | %s |" % (
+            a.get("name", "?"), a.get("status", "?"),
+            a.get("gravity", "?"), a.get("public_since") or "—"))
+    write_summary(lines)
 
     if errors:
         sys.exit("\n%d erreur(s). La base n'est pas valide." % len(errors))

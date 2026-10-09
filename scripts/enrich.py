@@ -29,6 +29,7 @@ Sans reseau, --dry-run montre la liste des manquants et la requete SPARQL genere
 import argparse
 import datetime
 import json
+import os
 import sys
 import time
 import urllib.parse
@@ -86,6 +87,15 @@ def ask(query):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/sparql-results+json"})
     with urllib.request.urlopen(req, timeout=60) as fh:
         return json.load(fh)
+
+
+def write_summary(lines):
+    """Resume lisible sur la page du run GitHub Actions."""
+    path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not path:
+        return
+    with open(path, "a", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
 
 
 def load_checked(path=CHECKED, stale_days=0):
@@ -245,6 +255,23 @@ def cmd_find(args):
     print("%d brouillon(s) ecrit(s) dans %s." % (len(drafts), out))
     print("Aucun n'entrera dans la base tant que son statut vaudra A_VERIFIER.")
 
+    lines = ["## Recherche Wikidata", "",
+             "**%d nom(s) interroges, %d brouillon(s) produit(s).**" % (len(names), len(drafts)), ""]
+    if drafts:
+        lines += ["### A verifier", "", "| Artiste | Chefs declares par Wikidata |", "|---|---|"]
+        for d in drafts:
+            lines.append("| %s | %s |" % (d["name"], ", ".join(d["categories"]) or "—"))
+        lines += ["", "Ces entrees sont des **brouillons**. Ouvrir la pull request, "
+                      "remplacer `A_VERIFIER` par le statut reel, renseigner `gravity` "
+                      "et `public_since`, ajouter une source de presse.", ""]
+    rien = [n for n in names if normalize(n) not in outcome]
+    if rien:
+        lines += ["### Rien trouve", "",
+                  ", ".join(rien), "",
+                  "Ces noms sont inscrits dans `%s` et ne seront plus reinterroges. "
+                  "Utiliser `--force` ou `--stale` pour y revenir." % CHECKED]
+    write_summary(lines)
+
 
 def cmd_apply(args):
     cand = json.loads(Path(args.apply).read_text(encoding="utf-8"))
@@ -281,6 +308,15 @@ def cmd_apply(args):
         print("\nEcartes : %d" % len(skipped))
         for name, why in skipped:
             print("  - %s (%s)" % (name, why))
+
+    lines = ["## Fusion dans la base", "",
+             "**%d entree(s) ajoutee(s), %d ecartee(s).**" % (len(merged), len(skipped)), ""]
+    if merged:
+        lines += ["### Ajoutees", ""] + ["- " + m for m in merged] + [""]
+    if skipped:
+        lines += ["### Ecartees", "", "| Artiste | Motif |", "|---|---|"]
+        lines += ["| %s | %s |" % (n, w) for n, w in skipped] + [""]
+    write_summary(lines)
 
 
 def main():
