@@ -213,6 +213,42 @@
         "https://www.aljazeera.com/program/newsfeed/2025/2/19/rapper-aap-rocky-found-not-guilty-in-gun-assault-case",
         "https://www.kmxt.org/2025-02-18/rapper-a-ap-rocky-found-not-guilty-of-felony-assault-with-a-firearm"
       ]
+    },
+    {
+      "name": "Nekfeu",
+      "aliases": [
+        "Ken Samaras"
+      ],
+      "status": "accused_single",
+      "gravity": 2,
+      "categories": [
+        "viol conjugal (accusations)",
+        "violences conjugales (accusations)"
+      ],
+      "public_since": "2024-11",
+      "summary": "Le 3 novembre 2024, l'avocate de son ex-epouse rend publiques des accusations de viols repetes et de violences sexuelles, psychologiques et physiques durant leurs quatre ans de relation ; une plainte a ete deposee en juillet 2024 sans convocation a ce stade. Nekfeu dement en bloc des le lendemain, qualifie les accusations d'infondees, affirme que des plaintes similaires ont deja ete classees sans suite et se dit victime de denonciations calomnieuses. Le divorce a ete prononce en mars 2024 et la garde de leur enfant lui a ete confiee. Aucune juridiction n'a juge ces faits : presomption d'innocence.",
+      "sources": [
+        "https://www.europe1.fr/node/17142",
+        "https://www.europe1.fr/node/17154"
+      ]
+    },
+    {
+      "name": "Sofiane",
+      "aliases": [
+        "Fianso",
+        "Sofiane Zermani"
+      ],
+      "status": "convicted",
+      "gravity": 2,
+      "categories": [
+        "entrave a la circulation",
+        "mise en danger"
+      ],
+      "public_since": "2017-04",
+      "summary": "Condamne en decembre 2017 a quatre mois de prison avec sursis et 1 500 euros d'amende pour avoir bloque une portion de l'autoroute A3 en avril 2017 afin de tourner le clip de 'Toka'. Quatre proches ont ete condamnes avec lui. Il a en revanche ete relaxe pour un second clip tourne a la cite des 3000 a Aulnay-sous-Bois. Faits de mise en danger, non genres.",
+      "sources": [
+        "https://www.europe1.fr/societe/clip-sur-lautoroute-le-rappeur-sofiane-condamne-a-quatre-mois-de-prison-avec-sursis-3565940"
+      ]
     }
   ]
 }
