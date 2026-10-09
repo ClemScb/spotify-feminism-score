@@ -249,6 +249,63 @@
       "sources": [
         "https://www.europe1.fr/societe/clip-sur-lautoroute-le-rappeur-sofiane-condamne-a-quatre-mois-de-prison-avec-sursis-3565940"
       ]
+    },
+    {
+      "name": "PNL",
+      "aliases": [
+        "Ademo",
+        "Tarik Andrieu"
+      ],
+      "status": "acquitted",
+      "gravity": 0,
+      "categories": [
+        "relaxe (outrage et rebellion)"
+      ],
+      "public_since": "2020-09",
+      "summary": "Ademo, l'un des deux freres du duo, a ete interpelle le 5 septembre 2020 a Paris, une arrestation filmee par des passants qui avait suscite de nombreuses reactions. Poursuivi pour usage de stupefiants, outrage et rebellion, il a ete RELAXE par le tribunal correctionnel de Paris le 5 mai 2021, la juridiction retenant une exception de nullite des proces-verbaux d'interpellation. Le parquet avait requis deux mois ferme sous bracelet. Entree neutre : une juridiction a tranche.",
+      "sources": [
+        "https://www.lecourrierdelatlas.com/?p=172711",
+        "https://www.purepeople.com/article/ademo-pnl-le-rappeur-totalement-relaxe-dans-l-affaire-de-son-interpellation-musclee_a434896/1"
+      ]
+    },
+    {
+      "name": "Naps",
+      "aliases": [
+        "Nabil Boukhobza"
+      ],
+      "status": "charged",
+      "gravity": 4,
+      "categories": [
+        "viol",
+        "agressions sexuelles"
+      ],
+      "public_since": "2021-10",
+      "summary": "Mis en examen le 23 octobre 2021 et renvoye en juillet 2024 devant la cour criminelle de Paris pour le viol d'une femme endormie dans une chambre d'hotel le 1er octobre 2021. CONDAMNE le 19 fevrier 2026 a sept ans de prison avec mandat de depot, la cour retenant l'absence de consentement. Il a nie avec force pendant tout le proces et a INTERJETE APPEL : la cour d'appel l'a remis en liberte sous controle judiciaire sans caution en mars 2026. L'appel etant suspensif, il demeure juridiquement presume innocent dans l'attente d'un nouveau proces, d'ou le statut 'poursuivi' plutot que 'condamne'. Il a par ailleurs ete mis en examen pour agressions sexuelles dans d'autres affaires.",
+      "sources": [
+        "https://www.parismatch.be/actualites/monde/2026/03/07/condamne-pour-viol-le-rappeur-naps-a-ete-remis-en-liberte-V56NN3KMIFHATMG3NI6QJUPTTM/",
+        "https://www.parismatch.be/actualites/people/2024/07/24/le-rappeur-naps-auteur-de-la-kiffance-sera-juge-pour-viol-NW643IECPZEEZE2MYVQS6DTXGM/"
+      ]
+    },
+    {
+      "name": "Maes",
+      "aliases": [
+        "Walid Georgey"
+      ],
+      "status": "convicted",
+      "gravity": 4,
+      "categories": [
+        "tentative d enlevement et sequestration",
+        "bande criminelle",
+        "incitation a commettre des crimes",
+        "violences en reunion",
+        "trafic de stupefiants"
+      ],
+      "public_since": "2025-01",
+      "summary": "Condamne le 26 novembre 2025 a sept ans de prison ferme par la chambre criminelle de Tanger pour constitution de bande criminelle, tentative d'enlevement et sequestration, et incitation a commettre des crimes et delits ; sa defense conteste et plaide l'absence de preuves. Il avait ete interpelle a l'aeroport de Casablanca le 22 janvier 2025 apres avoir quitte Dubai, sous le coup d'un mandat d'arret international emis par la France en octobre 2023. Anterieurement : condamne par contumace en juin 2024 a dix mois de prison et 10 000 euros d'amende par le tribunal correctionnel de Paris pour des violences en reunion commises en 2018 a la sortie d'un studio parisien, et incarcere en 2015 dans une affaire de trafic de stupefiants. Sa nationalite marocaine empeche son extradition vers la France. Faits de criminalite organisee, non genres.",
+      "sources": [
+        "https://telquel.ma/instant-t/2025/11/26/le-rappeur-maes-condamne-a-7-ans-de-prison_1962591/",
+        "https://telquel.ma/instant-t/2025/01/22/vise-par-un-mandat-darret-international-le-rappeur-maes-arrete-a-casablanca_1914321/"
+      ]
     }
   ]
 }
