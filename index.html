@@ -215,9 +215,10 @@
   <div id="gaps" hidden>
     <h2>Ce que la base ignore</h2>
     <p class="note">Ces artistes occupent une vraie place dans ta bibliothèque et
-    n'ont aucune entrée dans la base. Ça ne veut pas dire qu'ils sont irréprochables :
-    ça veut dire que personne ne les a encore documentés. Le score ne peut mesurer
-    que ce qu'il connaît.</p>
+    n'apparaissent nulle part : ni dans la base, ni parmi les noms déjà examinés sans
+    résultat, ni dans la file d'attente. Ça ne veut pas dire qu'ils sont
+    irréprochables, ça veut dire que personne ne les a encore regardés. Le score ne
+    mesure que ce qu'il connaît.</p>
     <p class="note" id="gapsList"></p>
     <p><button class="copy" id="copyGaps" type="button">Copier les 30 premiers noms</button></p>
   </div>
@@ -264,7 +265,9 @@
   var KNOWLEDGE_WEIGHT = 1.0;
   var BANNED_BONUS = 2.0, BANNED_CAP = 10.0;
   var ceiling = 0.5;
-  var db = null, checked = {}, lastLibrary = null;
+  // "known" rassemble TOUT ce qui ne doit plus apparaitre comme lacune :
+  // la base elle-meme, les noms deja examines sans resultat, et la file d'attente.
+  var db = null, known = {}, lastLibrary = null;
 
   var STATUS = {
     convicted:"condamné",
@@ -385,8 +388,8 @@
       artistSet[key] = 1;
       var e = db[key];
       if(!e){
-        // Un nom deja examine sans resultat n'est pas une lacune : on le masque.
-        if(!checked[key]){
+        // Deja dans la base, deja examine, ou deja en file : ce n'est plus une lacune.
+        if(!known[key]){
           var u = unknown[key] || (unknown[key] = {name:t.artist, n:0});
           u.n++;
         }
@@ -670,13 +673,26 @@
   });
 
   /* ---------- base de reference ---------- */
-  // Registre des noms deja examines sans resultat. Son absence n'est pas une erreur.
+  // Noms deja examines sans resultat. Leur absence n'est pas une erreur.
   fetch("review/checked.json")
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(j){
       (j && j.checked || []).forEach(function(e){
-        if(e && e.name) checked[normalize(e.name)] = 1;
+        if(e && e.name) known[normalize(e.name)] = 1;
       });
+      if(lastLibrary) render(compute(lastLibrary));
+    })
+    .catch(function(){});
+
+  // File d'attente : deja signales, en cours de traitement. Inutile de les resignaler.
+  fetch("review/queue.txt")
+    .then(function(r){ return r.ok ? r.text() : ""; })
+    .then(function(txt){
+      txt.split("\n").forEach(function(line){
+        var name = line.split("#")[0].trim();
+        if(name) known[normalize(name)] = 1;
+      });
+      if(lastLibrary) render(compute(lastLibrary));
     })
     .catch(function(){});
 
