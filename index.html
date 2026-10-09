@@ -264,7 +264,7 @@
   var KNOWLEDGE_WEIGHT = 1.0;
   var BANNED_BONUS = 2.0, BANNED_CAP = 10.0;
   var ceiling = 0.5;
-  var db = null, lastLibrary = null;
+  var db = null, checked = {}, lastLibrary = null;
 
   var STATUS = {
     convicted:"condamné",
@@ -385,8 +385,11 @@
       artistSet[key] = 1;
       var e = db[key];
       if(!e){
-        var u = unknown[key] || (unknown[key] = {name:t.artist, n:0});
-        u.n++;
+        // Un nom deja examine sans resultat n'est pas une lacune : on le masque.
+        if(!checked[key]){
+          var u = unknown[key] || (unknown[key] = {name:t.artist, n:0});
+          u.n++;
+        }
         return;
       }
       var b = per[e.name] || (per[e.name] = {entry:e, n:0, nPost:0, nDated:0});
@@ -667,6 +670,16 @@
   });
 
   /* ---------- base de reference ---------- */
+  // Registre des noms deja examines sans resultat. Son absence n'est pas une erreur.
+  fetch("review/checked.json")
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      (j && j.checked || []).forEach(function(e){
+        if(e && e.name) checked[normalize(e.name)] = 1;
+      });
+    })
+    .catch(function(){});
+
   fetch("artists.json")
     .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
     .then(function(j){

@@ -69,6 +69,15 @@ d'artistes circulent, donc aucune donnée personnelle ne passe par GitHub.
 dans le navigateur : statut réel à la place de `A_VERIFIER`, gravité, date de
 révélation, résumé factuel, source de presse. Tu supprimes les homonymes.
 
+Chaque nom interrogé est inscrit dans `review/checked.json`, avec la date et le
+résultat. Les exécutions suivantes l'ignorent, même si Wikidata n'avait rien
+renvoyé — sans quoi tu rechercherais éternellement les mêmes artistes. Le site
+masque aussi ces noms de la liste « Ce que la base ignore ».
+
+Pour revenir sur un nom : `--force` réinterroge tout, et `--stale 180`
+réinterroge ce qui a été examiné il y a plus de six mois, puisqu'une affaire
+peut survenir après coup.
+
 **2 · Fusionner dans la base** — un second bouton applique les brouillons relus à
 `artists.json` et ouvre une PR. Tout ce qui est resté incomplet est écarté, et le
 journal du job dit lesquels et pourquoi.

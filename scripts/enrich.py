@@ -27,6 +27,7 @@ Sans reseau, --dry-run montre la liste des manquants et la requete SPARQL genere
 """
 
 import argparse
+import datetime
 import json
 import sys
 import time
@@ -38,6 +39,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from score import load_csv, load_library_json, normalize, load_artists_db  # noqa: E402
 
+CHECKED = "review/checked.json"
 ENDPOINT = "https://query.wikidata.org/sparql"
 UA = "spotify-feminism-score/0.1 (https://github.com/ClemScb/spotify-feminism-score)"
 BATCH = 40
@@ -86,6 +88,48 @@ def ask(query):
         return json.load(fh)
 
 
+def load_checked(path=CHECKED, stale_days=0):
+    """Noms deja interroges. Renvoie l'ensemble des cles a ignorer."""
+    f = Path(path)
+    if not f.exists():
+        return set(), {}
+    data = json.loads(f.read_text(encoding="utf-8"))
+    entries = {normalize(e["name"]): e for e in data.get("checked", [])}
+    if not stale_days:
+        return set(entries), entries
+    # On reinterroge ce qui est ancien : une affaire peut survenir apres coup.
+    limit = datetime.date.today() - datetime.timedelta(days=stale_days)
+    fresh = set()
+    for key, e in entries.items():
+        try:
+            seen = datetime.date.fromisoformat(e.get("date", "")[:10])
+        except ValueError:
+            fresh.add(key)
+            continue
+        if seen >= limit:
+            fresh.add(key)
+    return fresh, entries
+
+
+def save_checked(names, outcome_by_key, path=CHECKED):
+    f = Path(path)
+    f.parent.mkdir(parents=True, exist_ok=True)
+    data = {"checked": []}
+    if f.exists():
+        data = json.loads(f.read_text(encoding="utf-8"))
+    entries = {normalize(e["name"]): e for e in data.get("checked", [])}
+    today = datetime.date.today().isoformat()
+    for n in names:
+        entries[normalize(n)] = {
+            "name": n,
+            "date": today,
+            "resultat": outcome_by_key.get(normalize(n), "rien trouve"),
+        }
+    data["checked"] = sorted(entries.values(), key=lambda e: e["name"].lower())
+    f.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return len(data["checked"])
+
+
 def library_artists(path):
     if path.suffix.lower() == ".json":
         tracks, _ = load_library_json(path)
@@ -114,8 +158,11 @@ def cmd_find(args):
             sys.exit("Fichier introuvable : %s" % path)
         counts = library_artists(path)
     floor = 0 if args.names else args.min_tracks
+    checked, _ = (set(), {}) if args.force else load_checked(stale_days=args.stale)
     unknown = [(a, n) for a, n in counts.most_common()
-               if n >= floor and normalize(a) not in db]
+               if n >= floor and normalize(a) not in db and normalize(a) not in checked]
+    if checked:
+        print("%d nom(s) deja examines, ignores." % len(checked))
 
     if args.names:
         print("%d noms soumis, %d absents de la base.\n" % (len(counts), len(unknown)))
@@ -187,6 +234,10 @@ def cmd_find(args):
             "_titres_dans_la_bibliotheque": n,
         })
 
+    outcome = {normalize(d["name"]): "brouillon produit" for d in drafts}
+    total_checked = save_checked(names, outcome)
+    print("Registre : %d nom(s) examines au total (%s)." % (total_checked, CHECKED))
+
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"candidates": drafts}, ensure_ascii=False, indent=2),
@@ -242,6 +293,10 @@ def main():
                     help="ignorer les artistes en dessous de ce nombre de titres (defaut 5)")
     ap.add_argument("--limit", type=int, default=120, help="nombre max d'artistes interroges")
     ap.add_argument("--dry-run", action="store_true", help="n'interroge pas le reseau")
+    ap.add_argument("--force", action="store_true",
+                    help="reinterroger meme les noms deja examines")
+    ap.add_argument("--stale", type=int, default=0, metavar="JOURS",
+                    help="reinterroger les noms examines il y a plus de JOURS jours")
     ap.add_argument("--apply", help="fusionner les brouillons verifies de ce fichier")
     args = ap.parse_args()
 
