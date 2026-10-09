@@ -367,6 +367,7 @@
   }
 
   function compute(lib){
+    var base = db || {};
     var ids = {};
     lib.tracks.forEach(function(t){ ids[t.tid] = 1; });
     var total = Object.keys(ids).length;
@@ -376,7 +377,7 @@
     lib.tracks.forEach(function(t){
       var key = normalize(t.artist);
       artistSet[key] = 1;
-      var e = db[key];
+      var e = base[key];
       if(!e){
         // Deja dans la base, deja examine, ou deja en file : ce n'est plus une lacune.
         if(!known[key]){
@@ -411,7 +412,7 @@
     });
     rows.sort(function(a,b){ return b.contribution - a.contribution; });
 
-    var matched = lib.banned.filter(function(n){ return db[normalize(n)]; });
+    var matched = lib.banned.filter(function(n){ return base[normalize(n)]; });
     var malus = Math.min(BANNED_CAP, BANNED_BONUS*matched.length);
     var flagged = Object.keys(flaggedIds).length;
 
@@ -612,7 +613,14 @@
         var lib = /\.json$/i.test(file.name) ? readLibraryJSON(text) : readCSV(text);
         if(!lib.tracks.length) throw new Error("Aucun titre trouvé dans ce fichier.");
         lastLibrary = lib;
-        render(compute(lib));
+        if(db){
+          render(compute(lib));
+        } else {
+          // La base n'est pas encore arrivee : on affiche et on rendra a sa reception.
+          $("err").hidden = false;
+          $("err").textContent = "Fichier lu (" + lib.tracks.length
+            + " lignes). Chargement de la base en cours\u2026";
+        }
       }catch(e){ fail(e.message); }
     };
     reader.readAsText(file);
@@ -676,7 +684,7 @@
       (j && j.checked || []).forEach(function(e){
         if(e && e.name) known[normalize(e.name)] = 1;
       });
-      if(lastLibrary) render(compute(lastLibrary));
+      if(db && lastLibrary) render(compute(lastLibrary));
     })
     .catch(function(){});
 
@@ -688,7 +696,7 @@
         var name = line.split("#")[0].trim();
         if(name) known[normalize(name)] = 1;
       });
-      if(lastLibrary) render(compute(lastLibrary));
+      if(db && lastLibrary) render(compute(lastLibrary));
     })
     .catch(function(){});
 
@@ -698,7 +706,10 @@
       db = index(j);
       if(!Object.keys(db).length){
         fail("La base d'artistes est vide : le score sera nul quoi que tu déposes.");
+        return;
       }
+      $("err").hidden = true;
+      if(lastLibrary) render(compute(lastLibrary));
     })
     .catch(function(){
       db = {};
