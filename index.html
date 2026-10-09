@@ -91,7 +91,16 @@
   .drop:focus-visible{outline:2px solid var(--accent);outline-offset:-5px}
   .drop span{font-family:var(--body);font-weight:400;font-size:.88rem;margin-top:.2rem;color:var(--muted)}
   .dragover .drop{background:rgba(200,48,95,.16);color:var(--ink)}
-  .getfile{margin:1.1rem 0 0;font-size:.95rem;color:var(--muted);max-width:34em;line-height:1.55}
+  .getfile{margin:1.2rem 0 0;max-width:36em}
+  .getfile p{font-size:.95rem;color:var(--muted);line-height:1.55;margin:.75rem 0 0}
+  .services{display:flex;gap:.4rem;flex-wrap:wrap}
+  .svc{font-family:var(--display);font-weight:600;font-size:.85rem;
+       background:transparent;color:var(--muted);border:1px solid var(--rule);
+       border-radius:2px;padding:.35rem .8rem;cursor:pointer}
+  .svc:hover{color:var(--ink);border-color:var(--ink)}
+  .svc.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .svc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .lu{font-size:.9rem;color:var(--muted);margin:1rem 0 0}
 
   /* reglage */
   .calib{margin:3rem 0 0;padding:1.5rem 0 0;border-top:1px solid var(--rule)}
@@ -142,7 +151,6 @@
         padding:.6rem 1.1rem;cursor:pointer}
   .copy:hover{background:var(--accent)}
   .copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--rule)}
   .err{color:var(--accent);font-family:var(--display);font-weight:600}
   [hidden]{display:none !important}
 
@@ -182,15 +190,21 @@
     <div class="needle rest" id="needle" style="left:0%"></div>
     <button class="drop" id="drop" type="button">
       Dépose ton fichier ici
-      <span>ou clique pour le choisir — CSV Exportify ou YourLibrary.json</span>
+      <span>ou clique pour le choisir — CSV Spotify, Deezer ou autre</span>
     </button>
     <div class="readout" id="readout" hidden><span id="scoreNum">0</span><small>/ 100</small></div>
   </div>
   <div class="scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
-  <p class="getfile" id="getfile">Pas encore de fichier&nbsp;? Récupère-le en deux minutes sur
-    <a href="https://exportify.net" target="_blank" rel="noopener">exportify.net</a> —
-    connecte ton compte, puis exporte la ligne «&nbsp;Liked Songs&nbsp;».</p>
+  <div class="getfile" id="getfile">
+    <div class="services" role="group" aria-label="Choisir son service">
+      <button type="button" class="svc on" data-svc="spotify">Spotify</button>
+      <button type="button" class="svc" data-svc="deezer">Deezer</button>
+      <button type="button" class="svc" data-svc="autre">Autre</button>
+    </div>
+    <p id="howget"></p>
+  </div>
   <p class="verdict" id="verdict" hidden></p>
+  <p class="lu" id="lu" hidden></p>
   <p class="err" id="err" hidden></p>
 </div>
 <input type="file" id="file" accept=".csv,.json" hidden>
@@ -220,6 +234,7 @@
     irréprochables, ça veut dire que personne ne les a encore regardés. Le score ne
     mesure que ce qu'il connaît.</p>
     <p class="note" id="gapsList"></p>
+    <p class="note" id="gapsCount"></p>
     <p><button class="copy" id="copyGaps" type="button">Copier les 30 premiers noms</button></p>
   </div>
 
@@ -244,17 +259,7 @@
   rendent des points.</p>
 </div>
 
-<footer>
-  <p class="note">Une seule situation fait sortir quelqu'un du score : la relaxe ou
-  l'acquittement prononcé par une juridiction. Tout le reste — classement sans suite,
-  enquête ouverte, refus de mise en accusation, procès en cours — signifie que
-  l'affaire n'a pas été tranchée en faveur de la personne, et reste au compteur avec
-  la mention «&nbsp;en cours&nbsp;». Toutes les natures de condamnation sont prises en
-  compte.
-  Les polémiques portant sur des paroles de chansons sont hors périmètre. La méthode
-  complète est dans <a href="SCORING.md">SCORING.md</a>, et elle est faite pour être
-  contestée.</p>
-</footer>
+
 
 </div>
 
@@ -288,15 +293,61 @@
 
   var $ = function(id){ return document.getElementById(id); };
 
+  var CHEMINS = {
+    spotify: "Va sur <a href=\"https://exportify.net\" target=\"_blank\" rel=\"noopener\">exportify.net</a>, "
+           + "connecte ton compte, puis exporte la ligne « Liked Songs ». Deux minutes, et tu "
+           + "récupères les dates d’ajout, qui comptent dans le calcul.",
+    deezer:  "Deezer n’a pas d’outil d’export. Passe par "
+           + "<a href=\"https://soundiiz.com\" target=\"_blank\" rel=\"noopener\">Soundiiz</a> ou "
+           + "<a href=\"https://www.tunemymusic.com\" target=\"_blank\" rel=\"noopener\">TuneMyMusic</a> : "
+           + "tu connectes ton compte et tu exportes tes titres favoris en CSV. Ces outils ne "
+           + "donnent pas la date d’ajout, le score perd donc sa dimension temporelle.",
+    autre:   "N’importe quel CSV fait l’affaire, du moment qu’une colonne porte les artistes — "
+           + "« Artist », « Artiste », « Artist Name(s) »… Une colonne de date d’ajout est "
+           + "utilisée si elle existe. Le fichier YourLibrary.json de l’export officiel Spotify "
+           + "est accepté tel quel."
+  };
+
   /* ---------- normalisation ---------- */
   function normalize(s){
     return (s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
       .toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
   }
-  // Exportify separe par des POINTS-VIRGULES. Ne jamais couper sur "," ni "&" :
-  // cela detruirait "Tyler, The Creator", "Earth, Wind & Fire", "Polo & Pan".
+
+  // Cle de repli : toute ponctuation et toute espace supprimees, avec les
+  // substitutions usuelles du rap. Elle rapproche "Tyler, The Creator" de
+  // "Tyler The Creator", "A$AP Rocky" de "ASAP Rocky", "Jay-Z" de "Jay Z".
+  function compacte(s){
+    return (s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .toLowerCase().replace(/\$/g,"s").replace(/!/g,"i").replace(/@/g,"a")
+      .replace(/[^a-z0-9]+/g,"");
+  }
+  // Exportify separe par des POINTS-VIRGULES, Deezer/Soundiiz par des virgules.
+  // On ne coupe jamais sur "," ni "&" ici : cela detruirait "Tyler, The Creator",
+  // "Earth, Wind & Fire" ou "Polo & Pan". Les separateurs ambigus sont traites
+  // plus bas, au moment de la correspondance, ou une erreur est sans consequence.
   function splitArtists(field){
-    return (field||"").split(";").map(function(s){return s.trim();}).filter(Boolean);
+    return (field||"").split(/\s*[;\/|]\s*|\s+feat\.?\s+|\s+ft\.?\s+/i)
+      .map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+
+  // Deezer ecrit "Gazo, Tiakola". On ne peut pas couper a l'aveugle, mais on peut
+  // tester les morceaux : un morceau n'est retenu que s'il correspond a une entree
+  // de la base. "Tyler, The Creator" reste donc intact, faute de correspondance.
+  function chercher(nom, base){
+    return base[normalize(nom)] || dbCompact[compacte(nom)] || null;
+  }
+
+  function resoudre(nom, base){
+    var direct = chercher(nom, base);
+    if(direct) return [direct];
+    if(!/[,&]/.test(nom)) return [];
+    var trouves = [];
+    nom.split(/\s*[,&]\s*/).forEach(function(part){
+      var e = chercher(part, base);
+      if(e && trouves.indexOf(e) === -1) trouves.push(e);
+    });
+    return trouves;
   }
   function parseDate(v){
     if(!v) return null;
@@ -337,14 +388,26 @@
     return -1;
   }
 
+  var dernierFormat = null;
+
   function readCSV(text){
     var rows = parseCSV(text);
     if(rows.length < 2) throw new Error("Ce fichier ne contient aucune ligne exploitable.");
     var head = rows[0].map(function(h){ return h.toLowerCase().trim(); });
-    var ia = pick(head,["artist name(s)","artist name","artist","artiste"]);
-    var it = pick(head,["track name","name","title","titre"]);
-    var id = pick(head,["added at","added_at","date added"]);
+    var ia = pick(head,["artist name(s)","artist name","artist(s)","artists","artist",
+                        "artiste(s)","artistes","artiste","interprète","interprete",
+                        "artist_name","album artist"]);
+    var it = pick(head,["track name","name","title","titre","track","song","morceau"]);
+    var id = pick(head,["added at","added_at","date added","date d'ajout","date ajout",
+                        "added","date"]);
+    if(ia === -1){
+      // Filet : tout intitule qui ressemble a une colonne d'artiste.
+      for(var h = 0; h < head.length; h++){
+        if(/artist|artiste|interpr|performer/.test(head[h])){ ia = h; break; }
+      }
+    }
     if(ia === -1) throw new Error("Colonne artiste introuvable. Colonnes lues : " + head.join(", "));
+    dernierFormat = {colonne: rows[0][ia], dates: id !== -1};
     var tracks = [];
     for(var r=1;r<rows.length;r++){
       var cells = rows[r];
@@ -363,20 +426,28 @@
     var tracks = list.filter(function(t){ return t.artist; })
       .map(function(t,i){ return {artist:String(t.artist).trim(), title:t.track||"", added:null, tid:i}; });
     var banned = (data.bannedArtists||[]).map(function(b){ return b.name; }).filter(Boolean);
+    dernierFormat = {colonne: "YourLibrary.json", dates: false};
     return {tracks:tracks, banned:banned};
   }
 
   /* ---------- calcul ---------- */
+  var dbCompact = {};
+
   function index(dbJson){
     var map = {};
+    dbCompact = {};
     (dbJson.artists||[]).forEach(function(e){
       if(!e.name || e.name.indexOf("EXEMPLE") === 0) return;
-      [e.name].concat(e.aliases||[]).forEach(function(label){ map[normalize(label)] = e; });
+      [e.name].concat(e.aliases||[]).forEach(function(label){
+        map[normalize(label)] = e;
+        dbCompact[compacte(label)] = e;
+      });
     });
     return map;
   }
 
   function compute(lib){
+    var base = db || {};
     var ids = {};
     lib.tracks.forEach(function(t){ ids[t.tid] = 1; });
     var total = Object.keys(ids).length;
@@ -386,20 +457,33 @@
     lib.tracks.forEach(function(t){
       var key = normalize(t.artist);
       artistSet[key] = 1;
-      var e = db[key];
-      if(!e){
-        // Deja dans la base, deja examine, ou deja en file : ce n'est plus une lacune.
-        if(!known[key]){
-          var u = unknown[key] || (unknown[key] = {name:t.artist, n:0});
+      var touches = resoudre(t.artist, base);
+      if(!touches.length){
+        // Le nom entier a pu etre deja traite tel quel : on verifie avant de decouper.
+        if(known[key]) return;
+        // Aucune correspondance : on decoupe pour ne pas afficher "Gazo, Tiakola"
+        // en bloc alors que Gazo est deja au registre.
+        var morceaux = /[,&]/.test(t.artist)
+          ? t.artist.split(/\s*[,&]\s*/).filter(Boolean) : [t.artist];
+        var inedits = morceaux.filter(function(m){ return !known[normalize(m)]; });
+        // Si le decoupage ne laisse que du connu, il n'y a pas de lacune.
+        // Si tout est inedit et qu'il n'y avait pas de virgule, on garde le nom entier.
+        (inedits.length === morceaux.length && morceaux.length > 1
+          ? [t.artist] : inedits).forEach(function(m){
+          var k = normalize(m);
+          if(known[k]) return;
+          var u = unknown[k] || (unknown[k] = {name:m.trim(), n:0});
           u.n++;
-        }
+        });
         return;
       }
-      var b = per[e.name] || (per[e.name] = {entry:e, n:0, nPost:0, nDated:0});
-      b.n++;
-      if(Number(e.gravity||0) > 0) flaggedIds[t.tid] = 1;
-      var since = parseSince(e.public_since);
-      if(t.added && since){ b.nDated++; if(t.added >= since) b.nPost++; }
+      touches.forEach(function(e){
+        var b = per[e.name] || (per[e.name] = {entry:e, n:0, nPost:0, nDated:0});
+        b.n++;
+        if(Number(e.gravity||0) > 0) flaggedIds[t.tid] = 1;
+        var since = parseSince(e.public_since);
+        if(t.added && since){ b.nDated++; if(t.added >= since) b.nPost++; }
+      });
     });
 
     var S = 0, rows = [], neutral = [];
@@ -421,7 +505,7 @@
     });
     rows.sort(function(a,b){ return b.contribution - a.contribution; });
 
-    var matched = lib.banned.filter(function(n){ return db[normalize(n)]; });
+    var matched = lib.banned.filter(function(n){ return chercher(n, base); });
     var malus = Math.min(BANNED_CAP, BANNED_BONUS*matched.length);
     var flagged = Object.keys(flaggedIds).length;
 
@@ -462,6 +546,13 @@
     $("calib").hidden = false;
     $("howto").hidden = true;
     $("getfile").hidden = true;
+    if(dernierFormat){
+      $("lu").hidden = false;
+      $("lu").textContent = "Lu depuis la colonne « " + dernierFormat.colonne + " ». "
+        + (dernierFormat.dates
+           ? "Dates d’ajout trouvées : la connaissance de cause est prise en compte."
+           : "Pas de date d’ajout dans ce fichier : le multiplicateur de connaissance de cause est neutralisé.");
+    }
     $("drop").firstChild.nodeValue = "Déposer un autre fichier";
 
     var box = $("rows");
@@ -524,6 +615,8 @@
 
     var gaps = $("gaps");
     var top30 = res.missing.slice(0, 30);
+    $("gapsCount").textContent = Object.keys(known).length
+      + " noms déjà couverts (base, registre, file d'attente).";
     if(top30.length){
       gaps.hidden = false;
       $("gapsList").textContent = top30.map(function(m){
@@ -620,7 +713,14 @@
         var lib = /\.json$/i.test(file.name) ? readLibraryJSON(text) : readCSV(text);
         if(!lib.tracks.length) throw new Error("Aucun titre trouvé dans ce fichier.");
         lastLibrary = lib;
-        render(compute(lib));
+        if(db){
+          render(compute(lib));
+        } else {
+          // La base n'est pas encore arrivee : on affiche et on rendra a sa reception.
+          $("err").hidden = false;
+          $("err").textContent = "Fichier lu (" + lib.tracks.length
+            + " lignes). Chargement de la base en cours\u2026";
+        }
       }catch(e){ fail(e.message); }
     };
     reader.readAsText(file);
@@ -630,6 +730,17 @@
     $("err").hidden = false;
     $("err").textContent = msg;
   }
+
+  function montrerChemin(svc){
+    $("howget").innerHTML = CHEMINS[svc] || CHEMINS.autre;
+    Array.prototype.forEach.call(document.querySelectorAll(".svc"), function(b){
+      b.classList.toggle("on", b.dataset.svc === svc);
+    });
+  }
+  montrerChemin("spotify");
+  Array.prototype.forEach.call(document.querySelectorAll(".svc"), function(b){
+    b.addEventListener("click", function(){ montrerChemin(b.dataset.svc); });
+  });
 
   var drop = $("drop"), meter = $("meter"), fileInput = $("file");
   drop.addEventListener("click", function(){ fileInput.click(); });
@@ -673,36 +784,43 @@
   });
 
   /* ---------- base de reference ---------- */
+  // GitHub Pages met en cache une dizaine de minutes : on contourne, sinon une
+  // mise a jour poussee il y a deux minutes reste invisible.
+  var frais = "?v=" + Date.now();
+
   // Noms deja examines sans resultat. Leur absence n'est pas une erreur.
-  fetch("review/checked.json")
+  fetch("review/checked.json" + frais)
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(j){
       (j && j.checked || []).forEach(function(e){
         if(e && e.name) known[normalize(e.name)] = 1;
       });
-      if(lastLibrary) render(compute(lastLibrary));
+      if(db && lastLibrary) render(compute(lastLibrary));
     })
     .catch(function(){});
 
   // File d'attente : deja signales, en cours de traitement. Inutile de les resignaler.
-  fetch("review/queue.txt")
+  fetch("review/queue.txt" + frais)
     .then(function(r){ return r.ok ? r.text() : ""; })
     .then(function(txt){
       txt.split("\n").forEach(function(line){
         var name = line.split("#")[0].trim();
         if(name) known[normalize(name)] = 1;
       });
-      if(lastLibrary) render(compute(lastLibrary));
+      if(db && lastLibrary) render(compute(lastLibrary));
     })
     .catch(function(){});
 
-  fetch("artists.json")
+  fetch("artists.json" + frais)
     .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
     .then(function(j){
       db = index(j);
       if(!Object.keys(db).length){
         fail("La base d'artistes est vide : le score sera nul quoi que tu déposes.");
+        return;
       }
+      $("err").hidden = true;
+      if(lastLibrary) render(compute(lastLibrary));
     })
     .catch(function(){
       db = {};

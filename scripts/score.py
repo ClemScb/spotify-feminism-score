@@ -56,11 +56,41 @@ def normalize(name):
     return s.strip()
 
 
+def compacte(name):
+    """Cle de repli : ponctuation et espaces supprimees, substitutions usuelles.
+    Rapproche "Tyler, The Creator" de "Tyler The Creator", "A$AP" de "ASAP"."""
+    s = unicodedata.normalize("NFKD", name)
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    s = s.lower().replace("$", "s").replace("!", "i").replace("@", "a")
+    return re.sub(r"[^a-z0-9]+", "", s)
+
+
 def split_artists(field):
-    """Exportify separe les artistes multiples par des POINTS-VIRGULES.
-    Ne jamais couper sur la virgule ni sur & : cela detruirait des noms
-    d'artistes ("Tyler, The Creator", "Earth, Wind & Fire", "Polo & Pan")."""
-    return [p.strip() for p in field.split(";") if p.strip()]
+    """Exportify separe par des POINTS-VIRGULES, Deezer/Soundiiz par des virgules.
+    On ne coupe jamais sur "," ni "&" ici : cela detruirait "Tyler, The Creator",
+    "Earth, Wind & Fire" ou "Polo & Pan". Les separateurs ambigus sont traites
+    a la correspondance, ou une erreur est sans consequence."""
+    parts = re.split(r"\s*[;/|]\s*|\s+feat\.?\s+|\s+ft\.?\s+", field, flags=re.I)
+    return [p.strip() for p in parts if p.strip()]
+
+
+def chercher(nom, db):
+    return db.get(normalize(nom)) or db.get("~" + compacte(nom))
+
+
+def resoudre(nom, db):
+    """Un morceau n'est retenu que s'il correspond a une entree de la base."""
+    entry = chercher(nom, db)
+    if entry:
+        return [entry]
+    if not re.search(r"[,&]", nom):
+        return []
+    trouves = []
+    for part in re.split(r"\s*[,&]\s*", nom):
+        e = chercher(part, db)
+        if e and e not in trouves:
+            trouves.append(e)
+    return trouves
 
 
 # --- Lecture des entrees ---------------------------------------------------
@@ -71,9 +101,18 @@ def load_csv(path):
     with open(path, newline="", encoding="utf-8-sig") as fh:
         reader = csv.DictReader(fh)
         cols = {c.lower().strip(): c for c in (reader.fieldnames or [])}
-        artist_col = cols.get("artist name(s)") or cols.get("artist name") or cols.get("artist")
-        title_col = cols.get("track name") or cols.get("name") or cols.get("title")
-        added_col = cols.get("added at") or cols.get("added_at")
+        artist_col = next((cols[c] for c in
+            ("artist name(s)", "artist name", "artist(s)", "artists", "artist",
+             "artiste(s)", "artistes", "artiste", "interprete", "artist_name")
+            if c in cols), None)
+        if not artist_col:  # filet : tout intitule qui ressemble
+            artist_col = next((cols[c] for c in cols
+                               if re.search(r"artist|artiste|interpr|performer", c)), None)
+        title_col = next((cols[c] for c in
+            ("track name", "name", "title", "titre", "track", "song") if c in cols), None)
+        added_col = next((cols[c] for c in
+            ("added at", "added_at", "date added", "date d'ajout", "added")
+            if c in cols), None)
         if not artist_col:
             sys.exit("Colonne artiste introuvable. Colonnes vues : %s" % reader.fieldnames)
         for row in reader:
@@ -134,6 +173,7 @@ def load_artists_db(path):
             continue
         for label in [entry["name"]] + entry.get("aliases", []):
             index[normalize(label)] = entry
+            index["~" + compacte(label)] = entry
     return index
 
 
@@ -146,23 +186,22 @@ def compute(tracks, db, banned_names):
         sys.exit("Aucun titre lu dans le fichier.")
 
     all_artists = {normalize(t[0]) for t in tracks}
+    # les cles "~compactes" sont des alias internes, pas des artistes
     per_artist = defaultdict(lambda: {"n": 0, "n_post": 0, "n_dated": 0})
     flagged_ids = set()
 
     for artist, _title, added, tid in tracks:
-        entry = db.get(normalize(artist))
-        if not entry:
-            continue
-        bucket = per_artist[entry["name"]]
-        bucket["entry"] = entry
-        bucket["n"] += 1
-        if float(entry.get("gravity", 0)) > 0:
-            flagged_ids.add(tid)
-        since = parse_public_since(entry.get("public_since"))
-        if added and since:
-            bucket["n_dated"] += 1
-            if added >= since:
-                bucket["n_post"] += 1
+        for entry in resoudre(artist, db):
+            bucket = per_artist[entry["name"]]
+            bucket["entry"] = entry
+            bucket["n"] += 1
+            if float(entry.get("gravity", 0)) > 0:
+                flagged_ids.add(tid)
+            since = parse_public_since(entry.get("public_since"))
+            if added and since:
+                bucket["n_dated"] += 1
+                if added >= since:
+                    bucket["n_post"] += 1
 
     rows = []
     S = 0.0
@@ -206,7 +245,7 @@ def compute(tracks, db, banned_names):
     # S peut etre negatif : une relaxe rend des points.
     score = 100.0 * min(1.0, S / CEILING)
 
-    banned_hits = [n for n in banned_names if normalize(n) in db]
+    banned_hits = [n for n in banned_names if chercher(n, db)]
     malus = min(BANNED_BONUS_CAP, BANNED_BONUS * len(banned_hits))
     score = max(0.0, score - malus)
 
